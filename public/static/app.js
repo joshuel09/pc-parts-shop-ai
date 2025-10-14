@@ -28,6 +28,11 @@ class PCPartsShop {
     // Set up event listeners
     this.setupEventListeners();
     
+    // Set up browser back/forward button support
+    window.addEventListener('popstate', () => {
+      this.route();
+    });
+    
     // Route to appropriate page
     this.route();
   }
@@ -382,7 +387,7 @@ class PCPartsShop {
     grid.innerHTML = categories.map(category => {
       const name = this.config.lang === 'jp' ? category.name_jp : category.name_en;
       return `
-        <div class="material-card p-6 text-center cursor-pointer" onclick="app.showCategoryPage('${category.slug}')">
+        <div class="material-card p-6 text-center cursor-pointer hover:shadow-lg transition-shadow duration-200" onclick="app.navigateToCategory('${category.slug}')"
           <div class="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
             <i class="fas fa-microchip text-2xl text-blue-600"></i>
           </div>
@@ -420,7 +425,7 @@ class PCPartsShop {
         ${product.is_featured ? '<span class="product-badge badge-featured">Featured</span>' : ''}
         ${product.compare_price ? '<span class="product-badge badge-sale top-2 right-2">Sale</span>' : ''}
         
-        <div class="relative cursor-pointer" onclick="app.showProductPage(${product.id})">
+        <div class="relative cursor-pointer" onclick="app.navigateToProduct(${product.id})">
           <img src="${product.primary_image || '/static/placeholder-product.jpg'}" 
                alt="${name}" 
                class="product-image">
@@ -429,7 +434,7 @@ class PCPartsShop {
         <div class="p-4">
           <div class="mb-2">
             <h3 class="font-semibold text-lg leading-tight hover:text-blue-600 cursor-pointer" 
-                onclick="app.showProductPage(${product.id})">
+                onclick="app.navigateToProduct(${product.id})"
               ${name}
             </h3>
             ${product.brand_name ? `<p class="text-sm text-gray-600">${product.brand_name}</p>` : ''}
@@ -760,9 +765,111 @@ class PCPartsShop {
     this.showNotification('Account menu - coming soon!', 'info');
   }
 
-  // Placeholder methods for routes not yet implemented
-  showCategoryPage(slug, params) {
-    this.showNotification('Category page - coming soon!', 'info');
+  // Category page implementation
+  async showCategoryPage(slug, params = new URLSearchParams()) {
+    try {
+      // First get category info
+      const categoryResponse = await axios.get(`/categories/${slug}`);
+      if (!categoryResponse.data.success) {
+        this.showError('Category not found');
+        return;
+      }
+      
+      const category = categoryResponse.data.data;
+      const categoryName = this.config.lang === 'jp' ? category.name_jp : category.name_en;
+      const categoryDesc = this.config.lang === 'jp' ? category.description_jp : category.description_en;
+      
+      const app = document.getElementById('app');
+      
+      app.innerHTML = `
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <!-- Category Header -->
+          <div class="mb-8">
+            <nav class="text-sm breadcrumbs mb-4">
+              <ol class="list-none p-0 inline-flex">
+                <li class="flex items-center">
+                  <button onclick="app.showHomePage()" class="text-blue-600 hover:text-blue-800">${this.t('Home')}</button>
+                  <i class="fas fa-chevron-right mx-2 text-gray-400"></i>
+                </li>
+                <li class="flex items-center">
+                  <button onclick="app.showProductsPage()" class="text-blue-600 hover:text-blue-800">${this.t('Products')}</button>
+                  <i class="fas fa-chevron-right mx-2 text-gray-400"></i>
+                </li>
+                <li class="text-gray-600">${categoryName}</li>
+              </ol>
+            </nav>
+            
+            <div class="bg-white rounded-lg shadow-sm p-6">
+              <div class="flex items-center mb-4">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                  <i class="fas fa-microchip text-2xl text-blue-600"></i>
+                </div>
+                <div>
+                  <h1 class="text-3xl font-bold text-gray-900">${categoryName}</h1>
+                  ${categoryDesc ? `<p class="text-gray-600 mt-2">${categoryDesc}</p>` : ''}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filters and Sort -->
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between bg-white rounded-lg shadow-sm p-4 mb-6">
+            <div class="flex flex-wrap items-center space-x-4 mb-4 md:mb-0">
+              <!-- Brand Filter -->
+              <select id="brandFilter" class="form-input">
+                <option value="">${this.t('All Brands')}</option>
+              </select>
+              
+              <!-- Price Range -->
+              <div class="flex items-center space-x-2">
+                <input type="number" id="minPrice" placeholder="${this.t('Min Price')}" class="form-input w-24">
+                <span>-</span>
+                <input type="number" id="maxPrice" placeholder="${this.t('Max Price')}" class="form-input w-24">
+              </div>
+              
+              <!-- Stock Filter -->
+              <label class="flex items-center">
+                <input type="checkbox" id="inStockOnly" class="mr-2">
+                <span class="text-sm">${this.t('In Stock Only')}</span>
+              </label>
+            </div>
+            
+            <!-- Sort -->
+            <div class="flex items-center space-x-2">
+              <label class="text-sm font-medium">${this.t('Sort by:')}</label>
+              <select id="sortSelect" class="form-input">
+                <option value="created_at:desc">${this.t('Newest First')}</option>
+                <option value="price:asc">${this.t('Price: Low to High')}</option>
+                <option value="price:desc">${this.t('Price: High to Low')}</option>
+                <option value="name_en:asc">${this.t('Name: A to Z')}</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Products Grid -->
+          <div id="categoryProductsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            ${this.renderLoadingSkeleton(8, 'product')}
+          </div>
+
+          <!-- Pagination -->
+          <div id="categoryPagination" class="mt-8 flex justify-center"></div>
+        </div>
+      `;
+
+      // Set up filter event listeners for category page
+      this.setupCategoryFilters(slug);
+      
+      // Load category products
+      await this.loadCategoryProducts(slug, params);
+      await this.loadFilterOptions();
+      
+      // Update page URL without refresh
+      window.history.pushState({}, '', `/category/${slug}`);
+      
+    } catch (error) {
+      console.error('Error loading category page:', error);
+      this.showError('Failed to load category');
+    }
   }
 
   showCheckoutPage() {
@@ -773,20 +880,317 @@ class PCPartsShop {
     this.showNotification('Admin dashboard - coming soon!', 'info');
   }
 
-  async loadProducts(params) {
-    this.showNotification('Product loading - coming soon!', 'info');
+  async loadProducts(params = new URLSearchParams()) {
+    try {
+      const page = params.get('page') || '1';
+      const limit = params.get('limit') || '12';
+      const category = params.get('category') || '';
+      const brand = params.get('brand') || '';
+      const minPrice = params.get('minPrice') || '';
+      const maxPrice = params.get('maxPrice') || '';
+      const inStock = params.get('inStock') || '';
+      const search = params.get('search') || '';
+      const sortBy = params.get('sortBy') || 'created_at';
+      const sortOrder = params.get('sortOrder') || 'desc';
+
+      const queryParams = new URLSearchParams({
+        page,
+        limit,
+        ...(category && { category }),
+        ...(brand && { brand }),
+        ...(minPrice && { minPrice }),
+        ...(maxPrice && { maxPrice }),
+        ...(inStock && { inStock }),
+        ...(search && { search }),
+        sortBy,
+        sortOrder
+      });
+
+      const response = await axios.get(`/products?${queryParams}`);
+      if (response.data.success) {
+        this.renderProducts(response.data.data, 'productsGrid');
+        this.renderPagination(response.data.pagination, 'pagination');
+      }
+    } catch (error) {
+      console.error('Error loading products:', error);
+      this.showError('Failed to load products');
+    }
+  }
+
+  async loadCategoryProducts(slug, params = new URLSearchParams()) {
+    try {
+      // Set category filter
+      params.set('category', slug);
+      
+      const page = params.get('page') || '1';
+      const limit = params.get('limit') || '12';
+      const brand = params.get('brand') || '';
+      const minPrice = params.get('minPrice') || '';
+      const maxPrice = params.get('maxPrice') || '';
+      const inStock = params.get('inStock') || '';
+      const sortBy = params.get('sortBy') || 'created_at';
+      const sortOrder = params.get('sortOrder') || 'desc';
+
+      const queryParams = new URLSearchParams({
+        page,
+        limit,
+        category: slug,
+        ...(brand && { brand }),
+        ...(minPrice && { minPrice }),
+        ...(maxPrice && { maxPrice }),
+        ...(inStock && { inStock }),
+        sortBy,
+        sortOrder
+      });
+
+      const response = await axios.get(`/products?${queryParams}`);
+      if (response.data.success) {
+        this.renderProducts(response.data.data, 'categoryProductsGrid');
+        this.renderPagination(response.data.pagination, 'categoryPagination', (newPage) => {
+          params.set('page', newPage);
+          this.loadCategoryProducts(slug, params);
+        });
+      }
+    } catch (error) {
+      console.error('Error loading category products:', error);
+      this.showError('Failed to load category products');
+    }
+  }
+
+  renderProducts(products, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    if (products.length === 0) {
+      container.innerHTML = `
+        <div class="col-span-full text-center py-12">
+          <i class="fas fa-box-open text-4xl text-gray-400 mb-4"></i>
+          <h3 class="text-lg font-semibold text-gray-600 mb-2">${this.t('No products found')}</h3>
+          <p class="text-gray-500">${this.t('Try adjusting your filters or search terms')}</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = products.map(product => this.renderProductCard(product)).join('');
+  }
+
+  renderPagination(pagination, containerId, onPageChange = null) {
+    const container = document.getElementById(containerId);
+    if (!container || pagination.totalPages <= 1) {
+      container.innerHTML = '';
+      return;
+    }
+
+    const pages = [];
+    const currentPage = pagination.page;
+    const totalPages = pagination.totalPages;
+
+    // Previous button
+    if (pagination.hasPrev) {
+      pages.push(`
+        <button onclick="${onPageChange ? `(${onPageChange})(${currentPage - 1})` : `app.changePage(${currentPage - 1})`}" 
+                class="px-3 py-2 text-gray-500 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+      `);
+    }
+
+    // Page numbers
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, currentPage + 2);
+
+    if (startPage > 1) {
+      pages.push(`<button onclick="${onPageChange ? `(${onPageChange})(1)` : `app.changePage(1)`}" class="px-3 py-2 text-gray-500 bg-white border border-gray-300 hover:bg-gray-50">1</button>`);
+      if (startPage > 2) {
+        pages.push(`<span class="px-3 py-2 text-gray-500 bg-white border border-gray-300">...</span>`);
+      }
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      const isActive = i === currentPage;
+      pages.push(`
+        <button onclick="${onPageChange ? `(${onPageChange})(${i})` : `app.changePage(${i})`}" 
+                class="px-3 py-2 ${isActive ? 'bg-blue-600 text-white' : 'text-gray-500 bg-white hover:bg-gray-50'} border border-gray-300">
+          ${i}
+        </button>
+      `);
+    }
+
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        pages.push(`<span class="px-3 py-2 text-gray-500 bg-white border border-gray-300">...</span>`);
+      }
+      pages.push(`<button onclick="${onPageChange ? `(${onPageChange})(${totalPages})` : `app.changePage(${totalPages})`}" class="px-3 py-2 text-gray-500 bg-white border border-gray-300 hover:bg-gray-50">${totalPages}</button>`);
+    }
+
+    // Next button
+    if (pagination.hasNext) {
+      pages.push(`
+        <button onclick="${onPageChange ? `(${onPageChange})(${currentPage + 1})` : `app.changePage(${currentPage + 1})`}" 
+                class="px-3 py-2 text-gray-500 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      `);
+    }
+
+    container.innerHTML = `
+      <nav class="flex items-center justify-center">
+        <div class="flex items-center">
+          ${pages.join('')}
+        </div>
+        <div class="ml-4 text-sm text-gray-600">
+          ${this.t('Showing')} ${(pagination.page - 1) * pagination.limit + 1} - ${Math.min(pagination.page * pagination.limit, pagination.total)} ${this.t('of')} ${pagination.total} ${this.t('results')}
+        </div>
+      </nav>
+    `;
+  }
+
+  changePage(page) {
+    const params = new URLSearchParams(window.location.search);
+    params.set('page', page);
+    this.loadProducts(params);
   }
 
   async loadFilterOptions() {
-    // Load categories and brands for filters
+    try {
+      const [categoriesResponse, brandsResponse] = await Promise.all([
+        axios.get('/categories'),
+        axios.get('/brands')
+      ]);
+
+      // Populate category filter
+      const categoryFilter = document.getElementById('categoryFilter');
+      if (categoryFilter && categoriesResponse.data.success) {
+        const categories = categoriesResponse.data.data;
+        categoryFilter.innerHTML = `<option value="">${this.t('All Categories')}</option>` +
+          categories.map(cat => {
+            const name = this.config.lang === 'jp' ? cat.name_jp : cat.name_en;
+            return `<option value="${cat.slug}">${name}</option>`;
+          }).join('');
+      }
+
+      // Populate brand filter
+      const brandFilter = document.getElementById('brandFilter');
+      if (brandFilter && brandsResponse.data.success) {
+        const brands = brandsResponse.data.data;
+        brandFilter.innerHTML = `<option value="">${this.t('All Brands')}</option>` +
+          brands.map(brand => `<option value="${brand.name}">${brand.name}</option>`).join('');
+      }
+    } catch (error) {
+      console.error('Error loading filter options:', error);
+    }
   }
 
   setupProductFilters() {
-    // Set up filter event listeners
+    const categoryFilter = document.getElementById('categoryFilter');
+    const brandFilter = document.getElementById('brandFilter');
+    const minPrice = document.getElementById('minPrice');
+    const maxPrice = document.getElementById('maxPrice');
+    const inStockOnly = document.getElementById('inStockOnly');
+    const sortSelect = document.getElementById('sortSelect');
+
+    const applyFilters = () => {
+      const params = new URLSearchParams();
+      if (categoryFilter?.value) params.set('category', categoryFilter.value);
+      if (brandFilter?.value) params.set('brand', brandFilter.value);
+      if (minPrice?.value) params.set('minPrice', minPrice.value);
+      if (maxPrice?.value) params.set('maxPrice', maxPrice.value);
+      if (inStockOnly?.checked) params.set('inStock', 'true');
+      if (sortSelect?.value) {
+        const [sortBy, sortOrder] = sortSelect.value.split(':');
+        params.set('sortBy', sortBy);
+        params.set('sortOrder', sortOrder);
+      }
+      this.loadProducts(params);
+    };
+
+    [categoryFilter, brandFilter, sortSelect].forEach(element => {
+      element?.addEventListener('change', applyFilters);
+    });
+
+    [minPrice, maxPrice].forEach(element => {
+      element?.addEventListener('input', this.debounce(applyFilters, 500));
+    });
+
+    inStockOnly?.addEventListener('change', applyFilters);
   }
 
-  searchProducts(query) {
-    this.showNotification(`Search for: ${query} - coming soon!`, 'info');
+  setupCategoryFilters(categorySlug) {
+    const brandFilter = document.getElementById('brandFilter');
+    const minPrice = document.getElementById('minPrice');
+    const maxPrice = document.getElementById('maxPrice');
+    const inStockOnly = document.getElementById('inStockOnly');
+    const sortSelect = document.getElementById('sortSelect');
+
+    const applyFilters = () => {
+      const params = new URLSearchParams();
+      params.set('category', categorySlug); // Always include category
+      if (brandFilter?.value) params.set('brand', brandFilter.value);
+      if (minPrice?.value) params.set('minPrice', minPrice.value);
+      if (maxPrice?.value) params.set('maxPrice', maxPrice.value);
+      if (inStockOnly?.checked) params.set('inStock', 'true');
+      if (sortSelect?.value) {
+        const [sortBy, sortOrder] = sortSelect.value.split(':');
+        params.set('sortBy', sortBy);
+        params.set('sortOrder', sortOrder);
+      }
+      this.loadCategoryProducts(categorySlug, params);
+    };
+
+    [brandFilter, sortSelect].forEach(element => {
+      element?.addEventListener('change', applyFilters);
+    });
+
+    [minPrice, maxPrice].forEach(element => {
+      element?.addEventListener('input', this.debounce(applyFilters, 500));
+    });
+
+    inStockOnly?.addEventListener('change', applyFilters);
+  }
+
+  debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
+
+  // Navigation helpers
+  navigateToCategory(slug) {
+    window.history.pushState({}, '', `/category/${slug}`);
+    this.showCategoryPage(slug);
+  }
+
+  navigateToProduct(id) {
+    window.history.pushState({}, '', `/product/${id}`);
+    this.showProductPage(id);
+  }
+
+  navigateToProducts(params = new URLSearchParams()) {
+    const url = params.toString() ? `/products?${params}` : '/products';
+    window.history.pushState({}, '', url);
+    this.showProductsPage(params);
+  }
+
+  async searchProducts(query) {
+    if (!query || query.trim().length === 0) {
+      this.showProductsPage();
+      return;
+    }
+
+    // Navigate to products page with search parameter
+    const params = new URLSearchParams();
+    params.set('search', query.trim());
+    
+    // Update URL and show products page
+    window.history.pushState({}, '', `/products?${params}`);
+    this.showProductsPage(params);
   }
 
   async loadProductReviews(productId) {
