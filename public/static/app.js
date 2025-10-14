@@ -1,0 +1,815 @@
+// PC Parts Shop - Frontend Application
+
+class PCPartsShop {
+  constructor() {
+    this.config = window.APP_CONFIG;
+    this.currentUser = null;
+    this.cart = { items: [], itemCount: 0, total: 0 };
+    this.sessionToken = this.getSessionToken();
+    
+    this.init();
+  }
+
+  async init() {
+    // Initialize axios defaults
+    axios.defaults.baseURL = this.config.apiBase;
+    axios.defaults.headers.common['X-Session-Token'] = this.sessionToken;
+    
+    // Set up auth token if exists
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      await this.checkAuth();
+    }
+    
+    // Load cart
+    await this.loadCart();
+    
+    // Set up event listeners
+    this.setupEventListeners();
+    
+    // Route to appropriate page
+    this.route();
+  }
+
+  setupEventListeners() {
+    // Language selector
+    const languageSelect = document.getElementById('languageSelect');
+    if (languageSelect) {
+      languageSelect.addEventListener('change', (e) => {
+        const newLang = e.target.value;
+        window.location.href = `${window.location.pathname}?lang=${newLang}`;
+      });
+    }
+
+    // Search
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+      let searchTimeout;
+      searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+          this.searchProducts(e.target.value);
+        }, 500);
+      });
+      
+      searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          this.searchProducts(e.target.value);
+        }
+      });
+    }
+
+    // Cart button
+    const cartBtn = document.getElementById('cartBtn');
+    if (cartBtn) {
+      cartBtn.addEventListener('click', () => {
+        this.showCart();
+      });
+    }
+
+    // Account button
+    const accountBtn = document.getElementById('accountBtn');
+    if (accountBtn) {
+      accountBtn.addEventListener('click', () => {
+        if (this.currentUser) {
+          this.showAccountMenu();
+        } else {
+          this.showLoginForm();
+        }
+      });
+    }
+  }
+
+  route() {
+    const path = window.location.pathname;
+    const params = new URLSearchParams(window.location.search);
+    
+    if (path === '/' || path === '/home') {
+      this.showHomePage();
+    } else if (path === '/products') {
+      this.showProductsPage(params);
+    } else if (path.startsWith('/product/')) {
+      const productId = path.split('/')[2];
+      this.showProductPage(productId);
+    } else if (path === '/categories') {
+      this.showCategoriesPage();
+    } else if (path.startsWith('/category/')) {
+      const categorySlug = path.split('/')[2];
+      this.showCategoryPage(categorySlug, params);
+    } else if (path === '/cart') {
+      this.showCartPage();
+    } else if (path === '/checkout') {
+      this.showCheckoutPage();
+    } else if (path === '/admin') {
+      this.showAdminDashboard();
+    } else {
+      this.showHomePage();
+    }
+  }
+
+  async showHomePage() {
+    const app = document.getElementById('app');
+    app.innerHTML = `
+      <!-- Hero Section -->
+      <section class="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 class="text-4xl md:text-6xl font-bold mb-6">
+            ${this.t('Build Your Dream PC')}
+          </h1>
+          <p class="text-xl mb-8 max-w-2xl mx-auto">
+            ${this.t('High-performance components from trusted brands. Professional quality, competitive prices.')}
+          </p>
+          <button onclick="app.showProductsPage()" class="btn btn-lg bg-white text-blue-600 hover:bg-gray-100">
+            <i class="fas fa-rocket mr-2"></i>
+            ${this.t('Shop Now')}
+          </button>
+        </div>
+      </section>
+
+      <!-- Featured Categories -->
+      <section class="py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 class="text-3xl font-bold text-center mb-12">${this.t('Shop by Category')}</h2>
+          <div id="categoriesGrid" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            ${this.renderLoadingSkeleton(8, 'category')}
+          </div>
+        </div>
+      </section>
+
+      <!-- Featured Products -->
+      <section class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 class="text-3xl font-bold text-center mb-12">${this.t('Featured Products')}</h2>
+          <div id="featuredProducts" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            ${this.renderLoadingSkeleton(8, 'product')}
+          </div>
+        </div>
+      </section>
+    `;
+
+    // Load data
+    await Promise.all([
+      this.loadCategories(),
+      this.loadFeaturedProducts()
+    ]);
+  }
+
+  async showProductsPage(params = new URLSearchParams()) {
+    const app = document.getElementById('app');
+    
+    app.innerHTML = `
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Page Header -->
+        <div class="mb-8">
+          <h1 class="text-3xl font-bold text-gray-900 mb-4">${this.t('All Products')}</h1>
+          
+          <!-- Filters and Sort -->
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between bg-white rounded-lg shadow-sm p-4">
+            <div class="flex flex-wrap items-center space-x-4 mb-4 md:mb-0">
+              <!-- Category Filter -->
+              <select id="categoryFilter" class="form-input">
+                <option value="">${this.t('All Categories')}</option>
+              </select>
+              
+              <!-- Brand Filter -->
+              <select id="brandFilter" class="form-input">
+                <option value="">${this.t('All Brands')}</option>
+              </select>
+              
+              <!-- Price Range -->
+              <div class="flex items-center space-x-2">
+                <input type="number" id="minPrice" placeholder="${this.t('Min Price')}" class="form-input w-24">
+                <span>-</span>
+                <input type="number" id="maxPrice" placeholder="${this.t('Max Price')}" class="form-input w-24">
+              </div>
+              
+              <!-- Stock Filter -->
+              <label class="flex items-center">
+                <input type="checkbox" id="inStockOnly" class="mr-2">
+                <span class="text-sm">${this.t('In Stock Only')}</span>
+              </label>
+            </div>
+            
+            <!-- Sort -->
+            <div class="flex items-center space-x-2">
+              <label class="text-sm font-medium">${this.t('Sort by:')}</label>
+              <select id="sortSelect" class="form-input">
+                <option value="created_at:desc">${this.t('Newest First')}</option>
+                <option value="price:asc">${this.t('Price: Low to High')}</option>
+                <option value="price:desc">${this.t('Price: High to Low')}</option>
+                <option value="name_en:asc">${this.t('Name: A to Z')}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Products Grid -->
+        <div id="productsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          ${this.renderLoadingSkeleton(12, 'product')}
+        </div>
+
+        <!-- Pagination -->
+        <div id="pagination" class="mt-8 flex justify-center"></div>
+      </div>
+    `;
+
+    // Set up filter event listeners
+    this.setupProductFilters();
+    
+    // Load initial products
+    await this.loadProducts(params);
+    await this.loadFilterOptions();
+  }
+
+  async showProductPage(productId) {
+    const app = document.getElementById('app');
+    
+    app.innerHTML = `
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div id="productDetails">
+          ${this.renderLoadingSkeleton(1, 'product-detail')}
+        </div>
+      </div>
+    `;
+
+    try {
+      const response = await axios.get(`/products/${productId}`);
+      if (response.data.success) {
+        this.renderProductDetails(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error loading product:', error);
+      this.showError('Failed to load product');
+    }
+  }
+
+  renderProductDetails(product) {
+    const productDetails = document.getElementById('productDetails');
+    const name = this.config.lang === 'jp' ? product.name_jp : product.name_en;
+    const description = this.config.lang === 'jp' ? product.description_jp : product.description_en;
+    const specs = product.specifications_json ? JSON.parse(product.specifications_json) : {};
+    
+    productDetails.innerHTML = `
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Product Images -->
+        <div class="space-y-4">
+          <div class="aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden">
+            <img src="${product.images?.[0]?.image_url || '/static/placeholder-product.jpg'}" 
+                 alt="${name}" 
+                 class="w-full h-full object-center object-cover">
+          </div>
+          
+          <!-- Thumbnail Gallery -->
+          <div class="grid grid-cols-4 gap-2">
+            ${product.images?.map(img => `
+              <img src="${img.image_url}" alt="${name}" 
+                   class="w-full h-16 object-cover rounded cursor-pointer hover:opacity-75"
+                   onclick="this.parentElement.parentElement.querySelector('img').src='${img.image_url}'">
+            `).join('') || ''}
+          </div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="space-y-6">
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900">${name}</h1>
+            <p class="text-lg text-gray-600 mt-2">SKU: ${product.sku}</p>
+            
+            ${product.brand_name ? `
+              <div class="flex items-center mt-2">
+                <span class="text-sm text-gray-500">${this.t('Brand')}:</span>
+                <span class="ml-2 font-medium">${product.brand_name}</span>
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- Price -->
+          <div class="flex items-center space-x-4">
+            <span class="text-3xl font-bold text-gray-900">
+              ${this.config.currency}${product.price.toLocaleString()}
+            </span>
+            ${product.compare_price ? `
+              <span class="text-lg text-gray-500 line-through">
+                ${this.config.currency}${product.compare_price.toLocaleString()}
+              </span>
+            ` : ''}
+          </div>
+
+          <!-- Stock Status -->
+          <div class="flex items-center">
+            ${product.inventory_quantity > 0 ? `
+              <div class="flex items-center text-green-600">
+                <i class="fas fa-check-circle mr-2"></i>
+                <span>${this.t('In Stock')} (${product.inventory_quantity} ${this.t('available')})</span>
+              </div>
+            ` : `
+              <div class="flex items-center text-red-600">
+                <i class="fas fa-times-circle mr-2"></i>
+                <span>${this.t('Out of Stock')}</span>
+              </div>
+            `}
+          </div>
+
+          <!-- Description -->
+          <div>
+            <h3 class="text-lg font-semibold mb-2">${this.t('Description')}</h3>
+            <p class="text-gray-700">${description || this.t('No description available')}</p>
+          </div>
+
+          <!-- Specifications -->
+          ${Object.keys(specs).length > 0 ? `
+            <div>
+              <h3 class="text-lg font-semibold mb-2">${this.t('Specifications')}</h3>
+              <div class="bg-gray-50 rounded-lg p-4">
+                <dl class="grid grid-cols-1 gap-2">
+                  ${Object.entries(specs).map(([key, value]) => `
+                    <div class="flex justify-between">
+                      <dt class="font-medium text-gray-600">${key}:</dt>
+                      <dd class="text-gray-900">${value}</dd>
+                    </div>
+                  `).join('')}
+                </dl>
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- Add to Cart -->
+          <div class="flex space-x-4">
+            <button onclick="app.addToCart(${product.id})" 
+                    class="btn btn-primary flex-1" 
+                    ${product.inventory_quantity === 0 ? 'disabled' : ''}>
+              <i class="fas fa-shopping-cart mr-2"></i>
+              ${this.t('Add to Cart')}
+            </button>
+            
+            <button class="btn btn-secondary">
+              <i class="fas fa-heart mr-2"></i>
+              ${this.t('Wishlist')}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reviews Section -->
+      <div class="mt-16">
+        <h2 class="text-2xl font-bold mb-6">${this.t('Customer Reviews')}</h2>
+        <div id="reviewsSection">
+          ${this.renderLoadingSkeleton(3, 'review')}
+        </div>
+      </div>
+    `;
+
+    // Load reviews
+    this.loadProductReviews(product.id);
+  }
+
+  async loadCategories() {
+    try {
+      const response = await axios.get('/categories');
+      if (response.data.success) {
+        this.renderCategories(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error loading categories:', error);
+    }
+  }
+
+  renderCategories(categories) {
+    const grid = document.getElementById('categoriesGrid');
+    if (!grid) return;
+
+    grid.innerHTML = categories.map(category => {
+      const name = this.config.lang === 'jp' ? category.name_jp : category.name_en;
+      return `
+        <div class="material-card p-6 text-center cursor-pointer" onclick="app.showCategoryPage('${category.slug}')">
+          <div class="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+            <i class="fas fa-microchip text-2xl text-blue-600"></i>
+          </div>
+          <h3 class="font-semibold text-lg mb-2">${name}</h3>
+          <p class="text-gray-600 text-sm">${category.product_count || 0} ${this.t('products')}</p>
+        </div>
+      `;
+    }).join('');
+  }
+
+  async loadFeaturedProducts() {
+    try {
+      const response = await axios.get('/products/featured');
+      if (response.data.success) {
+        this.renderFeaturedProducts(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error loading featured products:', error);
+    }
+  }
+
+  renderFeaturedProducts(products) {
+    const grid = document.getElementById('featuredProducts');
+    if (!grid) return;
+
+    grid.innerHTML = products.map(product => this.renderProductCard(product)).join('');
+  }
+
+  renderProductCard(product) {
+    const name = this.config.lang === 'jp' ? product.name_jp : product.name_en;
+    const shortDesc = this.config.lang === 'jp' ? product.short_description_jp : product.short_description_en;
+    
+    return `
+      <div class="product-card relative">
+        ${product.is_featured ? '<span class="product-badge badge-featured">Featured</span>' : ''}
+        ${product.compare_price ? '<span class="product-badge badge-sale top-2 right-2">Sale</span>' : ''}
+        
+        <div class="relative cursor-pointer" onclick="app.showProductPage(${product.id})">
+          <img src="${product.primary_image || '/static/placeholder-product.jpg'}" 
+               alt="${name}" 
+               class="product-image">
+        </div>
+        
+        <div class="p-4">
+          <div class="mb-2">
+            <h3 class="font-semibold text-lg leading-tight hover:text-blue-600 cursor-pointer" 
+                onclick="app.showProductPage(${product.id})">
+              ${name}
+            </h3>
+            ${product.brand_name ? `<p class="text-sm text-gray-600">${product.brand_name}</p>` : ''}
+          </div>
+          
+          ${shortDesc ? `<p class="text-sm text-gray-700 mb-3 line-clamp-2">${shortDesc}</p>` : ''}
+          
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center space-x-2">
+              <span class="text-lg font-bold text-gray-900">
+                ${this.config.currency}${product.price.toLocaleString()}
+              </span>
+              ${product.compare_price ? `
+                <span class="text-sm text-gray-500 line-through">
+                  ${this.config.currency}${product.compare_price.toLocaleString()}
+                </span>
+              ` : ''}
+            </div>
+            
+            <span class="text-xs ${product.inventory_quantity > 0 ? 'text-green-600' : 'text-red-600'}">
+              ${product.inventory_quantity > 0 ? this.t('In Stock') : this.t('Out of Stock')}
+            </span>
+          </div>
+          
+          <button onclick="app.addToCart(${product.id})" 
+                  class="btn btn-primary w-full btn-sm" 
+                  ${product.inventory_quantity === 0 ? 'disabled' : ''}>
+            <i class="fas fa-shopping-cart mr-2"></i>
+            ${this.t('Add to Cart')}
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  async addToCart(productId, variantId = null, quantity = 1) {
+    try {
+      const response = await axios.post('/cart/items', {
+        productId,
+        variantId,
+        quantity
+      });
+
+      if (response.data.success) {
+        this.cart = response.data.data;
+        this.sessionToken = response.data.sessionToken;
+        this.saveSessionToken(this.sessionToken);
+        this.updateCartUI();
+        this.showNotification(this.t('Added to cart'), 'success');
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      this.showNotification(error.response?.data?.error || this.t('Failed to add to cart'), 'error');
+    }
+  }
+
+  async loadCart() {
+    try {
+      const response = await axios.get('/cart');
+      if (response.data.success) {
+        this.cart = response.data.data;
+        this.sessionToken = response.data.sessionToken;
+        this.saveSessionToken(this.sessionToken);
+        this.updateCartUI();
+      }
+    } catch (error) {
+      console.error('Error loading cart:', error);
+    }
+  }
+
+  updateCartUI() {
+    const cartCount = document.getElementById('cartCount');
+    if (cartCount) {
+      cartCount.textContent = this.cart.itemCount || 0;
+      cartCount.classList.toggle('hidden', this.cart.itemCount === 0);
+    }
+  }
+
+  showCart() {
+    const modal = this.createModal();
+    modal.innerHTML = `
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">${this.t('Shopping Cart')}</h3>
+          <button onclick="this.closest('.modal-overlay').remove()" class="text-gray-400 hover:text-gray-600">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <div class="modal-body">
+          ${this.cart.items.length === 0 ? `
+            <div class="text-center py-8">
+              <i class="fas fa-shopping-cart text-4xl text-gray-400 mb-4"></i>
+              <p class="text-gray-600">${this.t('Your cart is empty')}</p>
+            </div>
+          ` : `
+            <div class="space-y-4">
+              ${this.cart.items.map(item => this.renderCartItem(item)).join('')}
+            </div>
+            
+            <div class="border-t mt-4 pt-4">
+              <div class="flex justify-between items-center mb-2">
+                <span>${this.t('Subtotal')}:</span>
+                <span>${this.config.currency}${this.cart.subtotal.toLocaleString()}</span>
+              </div>
+              <div class="flex justify-between items-center mb-2">
+                <span>${this.t('Tax')}:</span>
+                <span>${this.config.currency}${this.cart.tax.toLocaleString()}</span>
+              </div>
+              <div class="flex justify-between items-center mb-2">
+                <span>${this.t('Shipping')}:</span>
+                <span>${this.cart.shipping === 0 ? this.t('Free') : this.config.currency + this.cart.shipping.toLocaleString()}</span>
+              </div>
+              <div class="flex justify-between items-center font-bold text-lg border-t pt-2">
+                <span>${this.t('Total')}:</span>
+                <span>${this.config.currency}${this.cart.total.toLocaleString()}</span>
+              </div>
+            </div>
+          `}
+        </div>
+        
+        <div class="modal-footer">
+          <button onclick="this.closest('.modal-overlay').remove()" class="btn btn-secondary">
+            ${this.t('Continue Shopping')}
+          </button>
+          ${this.cart.items.length > 0 ? `
+            <button onclick="app.showCheckoutPage()" class="btn btn-primary">
+              ${this.t('Checkout')}
+            </button>
+          ` : ''}
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+  }
+
+  renderCartItem(item) {
+    const name = this.config.lang === 'jp' ? item.name_jp : item.name_en;
+    
+    return `
+      <div class="cart-item">
+        <img src="${item.image_url || '/static/placeholder-product.jpg'}" 
+             alt="${name}" 
+             class="cart-item-image">
+        
+        <div class="cart-item-info">
+          <h4 class="cart-item-name">${name}</h4>
+          <p class="cart-item-price">${this.config.currency}${item.price.toLocaleString()}</p>
+        </div>
+        
+        <div class="quantity-controls">
+          <button onclick="app.updateCartItem(${item.id}, ${item.quantity - 1})" 
+                  class="quantity-btn" ${item.quantity <= 1 ? 'disabled' : ''}>
+            <i class="fas fa-minus"></i>
+          </button>
+          <span class="px-3">${item.quantity}</span>
+          <button onclick="app.updateCartItem(${item.id}, ${item.quantity + 1})" class="quantity-btn">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
+        
+        <div class="text-right">
+          <p class="font-medium">${this.config.currency}${(item.price * item.quantity).toLocaleString()}</p>
+          <button onclick="app.removeCartItem(${item.id})" class="text-red-600 text-sm hover:underline">
+            <i class="fas fa-trash mr-1"></i>${this.t('Remove')}
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  async updateCartItem(itemId, quantity) {
+    try {
+      const response = await axios.put(`/cart/items/${itemId}`, { quantity });
+      if (response.data.success) {
+        this.cart = response.data.data;
+        this.updateCartUI();
+        // Refresh cart modal if open
+        const cartModal = document.querySelector('.modal-overlay');
+        if (cartModal) {
+          cartModal.remove();
+          this.showCart();
+        }
+      }
+    } catch (error) {
+      console.error('Error updating cart:', error);
+      this.showNotification(this.t('Failed to update cart'), 'error');
+    }
+  }
+
+  async removeCartItem(itemId) {
+    try {
+      const response = await axios.delete(`/cart/items/${itemId}`);
+      if (response.data.success) {
+        this.cart = response.data.data;
+        this.updateCartUI();
+        // Refresh cart modal if open
+        const cartModal = document.querySelector('.modal-overlay');
+        if (cartModal) {
+          cartModal.remove();
+          this.showCart();
+        }
+        this.showNotification(this.t('Item removed from cart'), 'success');
+      }
+    } catch (error) {
+      console.error('Error removing cart item:', error);
+      this.showNotification(this.t('Failed to remove item'), 'error');
+    }
+  }
+
+  // Utility methods
+  t(key) {
+    // Simple translation function
+    return key;
+  }
+
+  getSessionToken() {
+    let token = localStorage.getItem('sessionToken');
+    if (!token) {
+      token = 'session_' + Math.random().toString(36).substring(2) + '_' + Date.now();
+      this.saveSessionToken(token);
+    }
+    return token;
+  }
+
+  saveSessionToken(token) {
+    localStorage.setItem('sessionToken', token);
+    axios.defaults.headers.common['X-Session-Token'] = token;
+  }
+
+  renderLoadingSkeleton(count, type) {
+    let template = '';
+    
+    switch (type) {
+      case 'product':
+        template = `
+          <div class="material-card p-4">
+            <div class="skeleton-image mb-4"></div>
+            <div class="skeleton-title mb-2"></div>
+            <div class="skeleton-text mb-4"></div>
+            <div class="skeleton-text w-20"></div>
+          </div>
+        `;
+        break;
+      case 'category':
+        template = `
+          <div class="material-card p-6 text-center">
+            <div class="w-16 h-16 skeleton rounded-full mx-auto mb-4"></div>
+            <div class="skeleton-title mb-2"></div>
+            <div class="skeleton-text w-16 mx-auto"></div>
+          </div>
+        `;
+        break;
+      default:
+        template = `<div class="skeleton h-20 mb-4"></div>`;
+    }
+    
+    return Array(count).fill(template).join('');
+  }
+
+  createModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay fade-in';
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.remove();
+      }
+    });
+    return modal;
+  }
+
+  showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type} fade-in`;
+    notification.innerHTML = `
+      <div class="flex items-center justify-between">
+        <span>${message}</span>
+        <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-current opacity-75 hover:opacity-100">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      notification.remove();
+    }, 5000);
+  }
+
+  showError(message) {
+    const app = document.getElementById('app');
+    app.innerHTML = `
+      <div class="max-w-md mx-auto mt-20 text-center">
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <i class="fas fa-exclamation-triangle mr-2"></i>
+          ${message}
+        </div>
+        <button onclick="app.showHomePage()" class="btn btn-primary mt-4">
+          ${this.t('Go Home')}
+        </button>
+      </div>
+    `;
+  }
+
+  // Auth methods (simplified for now)
+  async checkAuth() {
+    try {
+      const response = await axios.get('/auth/me');
+      if (response.data.success) {
+        this.currentUser = response.data.data;
+      }
+    } catch (error) {
+      // Not authenticated
+      localStorage.removeItem('authToken');
+      delete axios.defaults.headers.common['Authorization'];
+    }
+  }
+
+  showLoginForm() {
+    // Simplified - would show login modal
+    this.showNotification('Login functionality - coming soon!', 'info');
+  }
+
+  showAccountMenu() {
+    // Simplified - would show account dropdown
+    this.showNotification('Account menu - coming soon!', 'info');
+  }
+
+  // Placeholder methods for routes not yet implemented
+  showCategoryPage(slug, params) {
+    this.showNotification('Category page - coming soon!', 'info');
+  }
+
+  showCheckoutPage() {
+    this.showNotification('Checkout page - coming soon!', 'info');
+  }
+
+  showAdminDashboard() {
+    this.showNotification('Admin dashboard - coming soon!', 'info');
+  }
+
+  async loadProducts(params) {
+    this.showNotification('Product loading - coming soon!', 'info');
+  }
+
+  async loadFilterOptions() {
+    // Load categories and brands for filters
+  }
+
+  setupProductFilters() {
+    // Set up filter event listeners
+  }
+
+  searchProducts(query) {
+    this.showNotification(`Search for: ${query} - coming soon!`, 'info');
+  }
+
+  async loadProductReviews(productId) {
+    // Load and render product reviews
+    const reviewsSection = document.getElementById('reviewsSection');
+    if (reviewsSection) {
+      reviewsSection.innerHTML = `
+        <div class="text-center py-8 text-gray-500">
+          <i class="fas fa-star text-2xl mb-2"></i>
+          <p>No reviews yet. Be the first to review this product!</p>
+        </div>
+      `;
+    }
+  }
+}
+
+// Initialize the application
+const app = new PCPartsShop();
+
+// Hide loading indicator
+document.addEventListener('DOMContentLoaded', () => {
+  const loading = document.getElementById('loading');
+  if (loading) {
+    loading.remove();
+  }
+});
