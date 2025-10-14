@@ -1,0 +1,62 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci --legacy-peer-deps
+
+    - name: Build project
+      run: npm run build
+
+    - name: Run tests (if available)
+      run: npm test --if-present
+
+    # Deploy to Cloudflare Pages
+    - name: Deploy to Cloudflare Pages
+      uses: cloudflare/pages-action@v1
+      with:
+        apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        projectName: pc-parts-shop
+        directory: dist
+        # Optional: specify branch for deployment
+        branch: main
+
+    # Optional: Deploy database migrations (production)
+    - name: Deploy Database Migrations
+      if: github.ref == 'refs/heads/main'
+      run: |
+        npm install -g wrangler
+        echo "${{ secrets.CLOUDFLARE_API_TOKEN }}" | wrangler auth login --api-token
+        wrangler d1 migrations apply pc-parts-shop-production
+      env:
+        CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+    # Optional: Notify on deployment
+    - name: Deployment Notification
+      if: always()
+      run: |
+        if [ "${{ job.status }}" == "success" ]; then
+          echo "✅ Deployment successful!"
+          echo "🌐 Site URL: https://pc-parts-shop.pages.dev"
+        else
+          echo "❌ Deployment failed!"
+        fi
