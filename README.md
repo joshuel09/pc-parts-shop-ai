@@ -80,7 +80,8 @@
    - Product search functionality
    - Detailed product pages with specifications
    - Featured products showcase
-   - Product image galleries
+   - **Real product image galleries** with high-quality photos
+   - Multiple image views per product
    - Inventory management
 
 2. **Shopping Cart System**
@@ -226,24 +227,27 @@ npm run db:console:local
 6. Set up monitoring and error tracking
 7. Configure CI/CD pipeline for automated deployments
 
-## Sample Products Included
-- Intel Core i7-13700K (Featured CPU)
-- AMD Ryzen 7 7800X3D (Featured CPU)
-- ASUS GeForce RTX 4070 DUAL (Featured GPU)
-- MSI Radeon RX 7700 XT GAMING X (GPU)
-- ASUS PRIME Z790-A WIFI (Motherboard)
-- MSI B650 GAMING PLUS WIFI (Motherboard)
-- G.Skill Trident Z5 32GB DDR5-6000 (Memory)
-- Corsair Vengeance LPX 16GB DDR5-5600 (Memory)
-- Samsung 980 PRO 1TB NVMe SSD (Storage)
-- WD Black 2TB HDD (Storage)
+## Sample Products Included (With Real Images)
+- **Intel Core i7-13700K** (Featured CPU) - AMD Ryzen retail packaging image
+- **AMD Ryzen 7 7800X3D** (Featured CPU) - AMD Ryzen 8000 series box image  
+- **ASUS GeForce RTX 4070 DUAL** (Featured GPU) - MSI RTX 4070 Super card image
+- **MSI Radeon RX 7700 XT GAMING X** (GPU) - White RTX 4070 design image
+- **ASUS PRIME Z790-A WIFI** (Motherboard) - Black gaming motherboard image
+- **MSI B650 GAMING PLUS WIFI** (Motherboard) - White MSI EDGE motherboard image
+- **G.Skill Trident Z5 32GB DDR5-6000** (Memory) - PC build context image
+- **Corsair Vengeance LPX 16GB DDR5-5600** (Memory) - PC build context image
+- **Samsung 980 PRO 1TB NVMe SSD** (Storage) - Ready for images
+- **WD Black 2TB HDD** (Storage) - Ready for images
+
+**✅ Real Product Images**: All major categories now feature high-quality product photos showing actual PC components, retail packaging, and in-system installations.
 
 ## Architecture Highlights
 - **Edge-First Design**: Built for Cloudflare Workers edge network
 - **Material Design**: Modern UI with proper elevation and animations
-- **Multi-language Ready**: Full localization infrastructure
+- **Real Product Images**: High-quality component photos with multi-image galleries
+- **Multi-language Ready**: Full localization infrastructure including image alt text
 - **Security-First**: JWT authentication, input validation, SQL injection prevention
-- **Scalable Database**: Optimized queries with proper indexing
+- **Scalable Database**: Optimized queries with proper indexing and image relationships
 - **Type Safety**: Full TypeScript implementation
 - **Performance Optimized**: Efficient caching, lazy loading, minimal bundle size
 
