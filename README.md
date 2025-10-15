@@ -6,10 +6,10 @@
 - **Features**: Product catalog, shopping cart, user authentication, admin dashboard, multi-language support
 
 ## URLs
+- **GitHub Repository**: https://github.com/joshuel09/pc-parts-shop-ai
 - **Development**: https://3000-i1y3ntxbxvto8by3phvdt-de59bda9.sandbox.novita.ai
-- **Production**: (To be deployed to Cloudflare Pages)
+- **Production**: (Ready for Cloudflare Pages deployment)
 - **API Health**: https://3000-i1y3ntxbxvto8by3phvdt-de59bda9.sandbox.novita.ai/api/health
-- **GitHub**: (To be created)
 
 ## Data Architecture
 
@@ -305,5 +305,6 @@ npm run db:console:local
 
 ---
 
-*Last Updated: October 14, 2025*
-*Development Status: ✅ Complete - Language switching fully functional - Ready for deployment*
+*Last Updated: October 15, 2025*
+*Development Status: ✅ Complete - Successfully uploaded to GitHub - Ready for production deployment*
+*Repository: https://github.com/joshuel09/pc-parts-shop-ai*
