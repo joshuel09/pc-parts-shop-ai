@@ -350,3 +350,63 @@
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-gray-500;
 }
+
+/* Category card styles */
+.category-card {
+  @apply relative overflow-hidden;
+}
+
+.category-card:hover .category-card-bg {
+  @apply transform scale-105;
+}
+
+.category-card .category-icon-container {
+  @apply relative z-10;
+}
+
+/* Enhanced Material Design shadows for category cards */
+.category-card .material-card {
+  @apply relative transition-all duration-300 ease-out;
+}
+
+.category-card .material-card:hover {
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1), 0 8px 20px rgba(0,0,0,0.06);
+}
+
+/* Category specific gradients and animations */
+.category-card::before {
+  content: '';
+  @apply absolute inset-0 bg-gradient-to-br from-transparent to-gray-50 opacity-0 transition-opacity duration-300 rounded-lg;
+}
+
+.category-card:hover::before {
+  @apply opacity-100;
+}
+
+/* Text line clamping utility */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Logo styles */
+#logoLink {
+  @apply select-none transition-all duration-200;
+}
+
+#logoLink:hover {
+  @apply transform scale-105;
+}
+
+#logoLink:active {
+  @apply transform scale-95;
+}

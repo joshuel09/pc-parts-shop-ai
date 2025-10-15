@@ -6,6 +6,10 @@ class PCPartsShop {
     this.currentUser = null;
     this.cart = { items: [], itemCount: 0, total: 0 };
     this.sessionToken = this.getSessionToken();
+    this.translations = this.loadTranslations();
+    
+    // Update language from URL parameters if present
+    this.updateLanguageFromURL();
     
     this.init();
   }
@@ -38,12 +42,20 @@ class PCPartsShop {
   }
 
   setupEventListeners() {
+    // Logo click handler - navigate to home
+    const logoLink = document.getElementById('logoLink');
+    if (logoLink) {
+      logoLink.addEventListener('click', () => {
+        this.navigateToHome();
+      });
+    }
+
     // Language selector
     const languageSelect = document.getElementById('languageSelect');
     if (languageSelect) {
       languageSelect.addEventListener('change', (e) => {
         const newLang = e.target.value;
-        window.location.href = `${window.location.pathname}?lang=${newLang}`;
+        this.changeLanguage(newLang);
       });
     }
 
@@ -125,19 +137,34 @@ class PCPartsShop {
           <p class="text-xl mb-8 max-w-2xl mx-auto">
             ${this.t('High-performance components from trusted brands. Professional quality, competitive prices.')}
           </p>
-          <button onclick="app.showProductsPage()" class="btn btn-lg bg-white text-blue-600 hover:bg-gray-100">
-            <i class="fas fa-rocket mr-2"></i>
-            ${this.t('Shop Now')}
-          </button>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <button onclick="app.showProductsPage()" class="btn btn-lg bg-white text-blue-600 hover:bg-gray-100">
+              <i class="fas fa-rocket mr-2"></i>
+              ${this.t('Shop Now')}
+            </button>
+            <button onclick="app.showCategoriesPage()" class="btn btn-lg bg-transparent border-2 border-white text-white hover:bg-white hover:text-blue-600">
+              <i class="fas fa-th-large mr-2"></i>
+              ${this.t('Browse Categories')}
+            </button>
+          </div>
         </div>
       </section>
 
       <!-- Featured Categories -->
       <section class="py-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 class="text-3xl font-bold text-center mb-12">${this.t('Shop by Category')}</h2>
+          <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold mb-4">${this.t('Shop by Category')}</h2>
+            <p class="text-gray-600 mb-6">${this.t('Find the perfect components for your build')}</p>
+          </div>
           <div id="categoriesGrid" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
             ${this.renderLoadingSkeleton(8, 'category')}
+          </div>
+          <div class="text-center mt-8">
+            <button onclick="app.showCategoriesPage()" class="btn btn-outline">
+              <i class="fas fa-th-large mr-2"></i>
+              ${this.t('View All Categories')}
+            </button>
           </div>
         </div>
       </section>
@@ -369,6 +396,140 @@ class PCPartsShop {
     this.loadProductReviews(product.id);
   }
 
+  async showCategoriesPage() {
+    const app = document.getElementById('app');
+    
+    app.innerHTML = `
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Page Header -->
+        <div class="text-center mb-12">
+          <h1 class="text-4xl font-bold text-gray-900 mb-4">${this.t('Shop by Category')}</h1>
+          <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+            ${this.t('Discover our comprehensive selection of PC components and peripherals. From high-performance processors to cutting-edge graphics cards.')}
+          </p>
+        </div>
+
+        <!-- Categories Grid -->
+        <div id="allCategoriesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          ${this.renderLoadingSkeleton(8, 'category')}
+        </div>
+
+        <!-- Back to Home -->
+        <div class="text-center mt-12">
+          <button onclick="app.showHomePage()" class="btn btn-secondary">
+            <i class="fas fa-arrow-left mr-2"></i>
+            ${this.t('Back to Home')}
+          </button>
+        </div>
+      </div>
+    `;
+
+    // Load all categories
+    await this.loadAllCategories();
+  }
+
+  async loadAllCategories() {
+    try {
+      const response = await axios.get('/categories');
+      if (response.data.success) {
+        this.renderAllCategories(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error loading all categories:', error);
+      this.showError('Failed to load categories');
+    }
+  }
+
+  renderAllCategories(categories) {
+    const grid = document.getElementById('allCategoriesGrid');
+    if (!grid) return;
+
+    // Category icons mapping
+    const categoryIcons = {
+      'processors': 'fas fa-microchip',
+      'graphics-cards': 'fas fa-tv', 
+      'motherboards': 'fas fa-memory',
+      'memory': 'fas fa-hdd',
+      'storage': 'fas fa-save',
+      'power-supplies': 'fas fa-bolt',
+      'cases': 'fas fa-cube',
+      'cooling': 'fas fa-snowflake',
+      'peripherals': 'fas fa-keyboard'
+    };
+
+    // Category color themes
+    const categoryColors = {
+      'processors': { bg: 'bg-blue-100', icon: 'text-blue-600', border: 'hover:border-blue-300', gradient: 'from-blue-50 to-blue-100' },
+      'graphics-cards': { bg: 'bg-green-100', icon: 'text-green-600', border: 'hover:border-green-300', gradient: 'from-green-50 to-green-100' },
+      'motherboards': { bg: 'bg-purple-100', icon: 'text-purple-600', border: 'hover:border-purple-300', gradient: 'from-purple-50 to-purple-100' },
+      'memory': { bg: 'bg-orange-100', icon: 'text-orange-600', border: 'hover:border-orange-300', gradient: 'from-orange-50 to-orange-100' },
+      'storage': { bg: 'bg-indigo-100', icon: 'text-indigo-600', border: 'hover:border-indigo-300', gradient: 'from-indigo-50 to-indigo-100' },
+      'power-supplies': { bg: 'bg-yellow-100', icon: 'text-yellow-600', border: 'hover:border-yellow-300', gradient: 'from-yellow-50 to-yellow-100' },
+      'cases': { bg: 'bg-gray-100', icon: 'text-gray-600', border: 'hover:border-gray-300', gradient: 'from-gray-50 to-gray-100' },
+      'cooling': { bg: 'bg-cyan-100', icon: 'text-cyan-600', border: 'hover:border-cyan-300', gradient: 'from-cyan-50 to-cyan-100' },
+      'peripherals': { bg: 'bg-pink-100', icon: 'text-pink-600', border: 'hover:border-pink-300', gradient: 'from-pink-50 to-pink-100' }
+    };
+
+    grid.innerHTML = categories.map(category => {
+      const name = this.config.lang === 'jp' ? category.name_jp : category.name_en;
+      const description = this.config.lang === 'jp' ? category.description_jp : category.description_en;
+      const icon = categoryIcons[category.slug] || 'fas fa-microchip';
+      const colors = categoryColors[category.slug] || { bg: 'bg-blue-100', icon: 'text-blue-600', border: 'hover:border-blue-300', gradient: 'from-blue-50 to-blue-100' };
+      
+      return `
+        <div class="category-card group cursor-pointer transform transition-all duration-500 hover:scale-105" 
+             onclick="app.navigateToCategory('${category.slug}')">
+          
+          <!-- Enhanced Card Container -->
+          <div class="material-card h-full border-2 border-transparent ${colors.border} hover:shadow-2xl relative overflow-hidden">
+            
+            <!-- Background Gradient -->
+            <div class="absolute inset-0 bg-gradient-to-br ${colors.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
+            <!-- Card Content -->
+            <div class="relative z-10 p-8 text-center">
+              
+              <!-- Icon Section with Animation -->
+              <div class="w-24 h-24 mx-auto mb-6 ${colors.bg} rounded-full flex items-center justify-center group-hover:scale-110 group-hover:rotate-12 transition-all duration-500 shadow-lg">
+                <i class="${icon} text-4xl ${colors.icon}"></i>
+              </div>
+              
+              <!-- Title -->
+              <h3 class="font-bold text-xl mb-3 text-gray-800 group-hover:text-blue-600 transition-colors duration-300">
+                ${name}
+              </h3>
+              
+              <!-- Description -->
+              ${description ? `
+                <p class="text-gray-600 text-sm mb-4 line-clamp-3 leading-relaxed">
+                  ${description}
+                </p>
+              ` : ''}
+              
+              <!-- Product Count with Icon -->
+              <div class="flex items-center justify-center space-x-2 text-sm font-medium mb-4">
+                <i class="fas fa-cube text-gray-400"></i>
+                <span class="text-gray-600">
+                  ${category.product_count || 0} ${this.t('products')}
+                </span>
+              </div>
+              
+              <!-- Action Button -->
+              <div class="opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                <div class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+                  ${this.t('Browse')}
+                  <i class="fas fa-arrow-right ml-2"></i>
+                </div>
+              </div>
+              
+            </div>
+            
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
   async loadCategories() {
     try {
       const response = await axios.get('/categories');
@@ -384,15 +545,75 @@ class PCPartsShop {
     const grid = document.getElementById('categoriesGrid');
     if (!grid) return;
 
+    // Category icons mapping
+    const categoryIcons = {
+      'processors': 'fas fa-microchip',
+      'graphics-cards': 'fas fa-tv', 
+      'motherboards': 'fas fa-memory',
+      'memory': 'fas fa-hdd',
+      'storage': 'fas fa-save',
+      'power-supplies': 'fas fa-bolt',
+      'cases': 'fas fa-cube',
+      'cooling': 'fas fa-snowflake',
+      'peripherals': 'fas fa-keyboard'
+    };
+
+    // Category color themes
+    const categoryColors = {
+      'processors': { bg: 'bg-blue-100', icon: 'text-blue-600', border: 'hover:border-blue-300' },
+      'graphics-cards': { bg: 'bg-green-100', icon: 'text-green-600', border: 'hover:border-green-300' },
+      'motherboards': { bg: 'bg-purple-100', icon: 'text-purple-600', border: 'hover:border-purple-300' },
+      'memory': { bg: 'bg-orange-100', icon: 'text-orange-600', border: 'hover:border-orange-300' },
+      'storage': { bg: 'bg-indigo-100', icon: 'text-indigo-600', border: 'hover:border-indigo-300' },
+      'power-supplies': { bg: 'bg-yellow-100', icon: 'text-yellow-600', border: 'hover:border-yellow-300' },
+      'cases': { bg: 'bg-gray-100', icon: 'text-gray-600', border: 'hover:border-gray-300' },
+      'cooling': { bg: 'bg-cyan-100', icon: 'text-cyan-600', border: 'hover:border-cyan-300' },
+      'peripherals': { bg: 'bg-pink-100', icon: 'text-pink-600', border: 'hover:border-pink-300' }
+    };
+
     grid.innerHTML = categories.map(category => {
       const name = this.config.lang === 'jp' ? category.name_jp : category.name_en;
+      const description = this.config.lang === 'jp' ? category.description_jp : category.description_en;
+      const icon = categoryIcons[category.slug] || 'fas fa-microchip';
+      const colors = categoryColors[category.slug] || { bg: 'bg-blue-100', icon: 'text-blue-600', border: 'hover:border-blue-300' };
+      
       return `
-        <div class="material-card p-6 text-center cursor-pointer hover:shadow-lg transition-shadow duration-200" onclick="app.navigateToCategory('${category.slug}')"
-          <div class="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
-            <i class="fas fa-microchip text-2xl text-blue-600"></i>
+        <div class="category-card group cursor-pointer transform transition-all duration-300 hover:scale-105" 
+             onclick="app.navigateToCategory('${category.slug}')">
+          <!-- Card Container -->
+          <div class="material-card p-6 text-center h-full border-2 border-transparent ${colors.border} hover:shadow-xl">
+            
+            <!-- Icon Section -->
+            <div class="w-20 h-20 mx-auto mb-4 ${colors.bg} rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <i class="${icon} text-3xl ${colors.icon}"></i>
+            </div>
+            
+            <!-- Title -->
+            <h3 class="font-bold text-lg mb-2 text-gray-800 group-hover:text-blue-600 transition-colors duration-200">
+              ${name}
+            </h3>
+            
+            <!-- Description -->
+            ${description ? `
+              <p class="text-gray-600 text-sm mb-3 line-clamp-2 leading-relaxed">
+                ${description}
+              </p>
+            ` : ''}
+            
+            <!-- Product Count -->
+            <div class="flex items-center justify-center space-x-1 text-xs font-medium">
+              <i class="fas fa-cube text-gray-400"></i>
+              <span class="text-gray-600">
+                ${category.product_count || 0} ${this.t('products')}
+              </span>
+            </div>
+            
+            <!-- Hover Arrow -->
+            <div class="mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <i class="fas fa-arrow-right text-blue-500"></i>
+            </div>
+            
           </div>
-          <h3 class="font-semibold text-lg mb-2">${name}</h3>
-          <p class="text-gray-600 text-sm">${category.product_count || 0} ${this.t('products')}</p>
         </div>
       `;
     }).join('');
@@ -472,7 +693,7 @@ class PCPartsShop {
 
   async addToCart(productId, variantId = null, quantity = 1) {
     try {
-      const response = await axios.post('/cart/items', {
+      const response = await axios.post('/api/cart/items', {
         productId,
         variantId,
         quantity
@@ -493,7 +714,7 @@ class PCPartsShop {
 
   async loadCart() {
     try {
-      const response = await axios.get('/cart');
+      const response = await axios.get('/api/cart');
       if (response.data.success) {
         this.cart = response.data.data;
         this.sessionToken = response.data.sessionToken;
@@ -508,8 +729,21 @@ class PCPartsShop {
   updateCartUI() {
     const cartCount = document.getElementById('cartCount');
     if (cartCount) {
-      cartCount.textContent = this.cart.itemCount || 0;
-      cartCount.classList.toggle('hidden', this.cart.itemCount === 0);
+      const itemCount = this.cart.itemCount || 0;
+      cartCount.textContent = itemCount;
+      
+      // Show/hide badge based on item count
+      if (itemCount === 0) {
+        cartCount.classList.add('hidden');
+        cartCount.classList.remove('animate-bounce');
+      } else {
+        cartCount.classList.remove('hidden');
+        // Add bounce animation briefly when items are added
+        cartCount.classList.add('animate-bounce');
+        setTimeout(() => {
+          cartCount.classList.remove('animate-bounce');
+        }, 1000);
+      }
     }
   }
 
@@ -609,7 +843,7 @@ class PCPartsShop {
 
   async updateCartItem(itemId, quantity) {
     try {
-      const response = await axios.put(`/cart/items/${itemId}`, { quantity });
+      const response = await axios.put(`/api/cart/items/${itemId}`, { quantity });
       if (response.data.success) {
         this.cart = response.data.data;
         this.updateCartUI();
@@ -628,7 +862,7 @@ class PCPartsShop {
 
   async removeCartItem(itemId) {
     try {
-      const response = await axios.delete(`/cart/items/${itemId}`);
+      const response = await axios.delete(`/api/cart/items/${itemId}`);
       if (response.data.success) {
         this.cart = response.data.data;
         this.updateCartUI();
@@ -646,10 +880,196 @@ class PCPartsShop {
     }
   }
 
-  // Utility methods
+  // Translation and utility methods
+  loadTranslations() {
+    return {
+      en: {
+        // Navigation
+        'Home': 'Home',
+        'Products': 'Products', 
+        'Categories': 'Categories',
+        'Cart': 'Cart',
+        'Search products...': 'Search products...',
+        
+        // Categories
+        'Processors (CPU)': 'Processors (CPU)',
+        'Graphics Cards (GPU)': 'Graphics Cards (GPU)', 
+        'Motherboards': 'Motherboards',
+        'Memory (RAM)': 'Memory (RAM)',
+        'Storage': 'Storage',
+        'Power Supplies': 'Power Supplies',
+        'Cases': 'Cases',
+        'Cooling': 'Cooling',
+        'Peripherals': 'Peripherals',
+        
+        // Common
+        'products': 'products',
+        'Build Your Dream PC': 'Build Your Dream PC',
+        'High-performance components from trusted brands. Professional quality, competitive prices.': 'High-performance components from trusted brands. Professional quality, competitive prices.',
+        'Shop Now': 'Shop Now',
+        'Shop by Category': 'Shop by Category',
+        'Featured Products': 'Featured Products',
+        'All Products': 'All Products',
+        'All Categories': 'All Categories',
+        'All Brands': 'All Brands',
+        'Min Price': 'Min Price',
+        'Max Price': 'Max Price',
+        'In Stock Only': 'In Stock Only',
+        'Sort by:': 'Sort by:',
+        'Newest First': 'Newest First',
+        'Price: Low to High': 'Price: Low to High',
+        'Price: High to Low': 'Price: High to Low',
+        'Name: A to Z': 'Name: A to Z',
+        'Add to Cart': 'Add to Cart',
+        'In Stock': 'In Stock',
+        'Out of Stock': 'Out of Stock',
+        'available': 'available',
+        'Brand': 'Brand',
+        'Description': 'Description',
+        'Specifications': 'Specifications',
+        'No description available': 'No description available',
+        'Wishlist': 'Wishlist',
+        'No products found': 'No products found',
+        'Try adjusting your filters or search terms': 'Try adjusting your filters or search terms',
+        'Showing': 'Showing',
+        'of': 'of',
+        'results': 'results',
+        'Added to cart': 'Added to cart',
+        'Failed to add to cart': 'Failed to add to cart',
+        'Shopping Cart': 'Shopping Cart',
+        'Your cart is empty': 'Your cart is empty',
+        'Subtotal': 'Subtotal',
+        'Tax': 'Tax',
+        'Shipping': 'Shipping',
+        'Free': 'Free',
+        'Total': 'Total',
+        'Continue Shopping': 'Continue Shopping',
+        'Checkout': 'Checkout',
+        'Remove': 'Remove',
+        'Item removed from cart': 'Item removed from cart',
+        'Failed to remove item': 'Failed to remove item',
+        'Failed to update cart': 'Failed to update cart',
+        'Customer Reviews': 'Customer Reviews',
+        'Go Home': 'Go Home',
+        'Browse': 'Browse',
+        'Browse Categories': 'Browse Categories',
+        'View All Categories': 'View All Categories',
+        'Find the perfect components for your build': 'Find the perfect components for your build',
+        'Back to Home': 'Back to Home',
+        'Discover our comprehensive selection of PC components and peripherals. From high-performance processors to cutting-edge graphics cards.': 'Discover our comprehensive selection of PC components and peripherals. From high-performance processors to cutting-edge graphics cards.'
+      },
+      jp: {
+        // Navigation
+        'Home': 'ホーム',
+        'Products': '製品',
+        'Categories': 'カテゴリー', 
+        'Cart': 'カート',
+        'Search products...': '製品を検索...',
+        
+        // Categories
+        'Processors (CPU)': 'プロセッサー (CPU)',
+        'Graphics Cards (GPU)': 'グラフィックスカード (GPU)',
+        'Motherboards': 'マザーボード',
+        'Memory (RAM)': 'メモリ (RAM)',
+        'Storage': 'ストレージ',
+        'Power Supplies': '電源ユニット',
+        'Cases': 'PCケース',
+        'Cooling': '冷却システム',
+        'Peripherals': '周辺機器',
+        
+        // Common
+        'products': '製品',
+        'Build Your Dream PC': 'ドリームPCを構築',
+        'High-performance components from trusted brands. Professional quality, competitive prices.': '信頼できるブランドの高性能コンポーネント。プロ品質、競争力のある価格。',
+        'Shop Now': '今すぐ購入',
+        'Shop by Category': 'カテゴリー別に購入',
+        'Featured Products': 'おすすめ製品',
+        'All Products': 'すべての製品',
+        'All Categories': 'すべてのカテゴリー',
+        'All Brands': 'すべてのブランド',
+        'Min Price': '最低価格',
+        'Max Price': '最高価格',
+        'In Stock Only': '在庫ありのみ',
+        'Sort by:': '並び替え:',
+        'Newest First': '新しい順',
+        'Price: Low to High': '価格: 安い順',
+        'Price: High to Low': '価格: 高い順',
+        'Name: A to Z': '名前: A-Z',
+        'Add to Cart': 'カートに追加',
+        'In Stock': '在庫あり',
+        'Out of Stock': '在庫切れ',
+        'available': '利用可能',
+        'Brand': 'ブランド',
+        'Description': '説明',
+        'Specifications': '仕様',
+        'No description available': '説明がありません',
+        'Wishlist': 'ウィッシュリスト',
+        'No products found': '製品が見つかりません',
+        'Try adjusting your filters or search terms': 'フィルターや検索条件を調整してください',
+        'Showing': '表示中',
+        'of': '/',
+        'results': '結果',
+        'Added to cart': 'カートに追加しました',
+        'Failed to add to cart': 'カートへの追加に失敗しました',
+        'Shopping Cart': 'ショッピングカート',
+        'Your cart is empty': 'カートは空です',
+        'Subtotal': '小計',
+        'Tax': '税金',
+        'Shipping': '送料',
+        'Free': '無料',
+        'Total': '合計',
+        'Continue Shopping': '買い物を続ける',
+        'Checkout': 'チェックアウト',
+        'Remove': '削除',
+        'Item removed from cart': 'カートから商品を削除しました',
+        'Failed to remove item': '商品の削除に失敗しました',
+        'Failed to update cart': 'カートの更新に失敗しました',
+        'Customer Reviews': 'カスタマーレビュー',
+        'Go Home': 'ホームへ',
+        'Browse': '閲覧',
+        'Browse Categories': 'カテゴリーを閲覧',
+        'View All Categories': 'すべてのカテゴリーを表示',
+        'Find the perfect components for your build': 'あなたのビルドに最適なコンポーネントを見つけてください',
+        'Back to Home': 'ホームに戻る',
+        'Discover our comprehensive selection of PC components and peripherals. From high-performance processors to cutting-edge graphics cards.': 'PCコンポーネントと周辺機器の包括的な選択を発見してください。高性能プロセッサーから最先端のグラフィックスカードまで。'
+      }
+    };
+  }
+
+  // Update language from URL parameters
+  updateLanguageFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const langParam = urlParams.get('lang');
+    if (langParam && (langParam === 'en' || langParam === 'jp')) {
+      this.config.lang = langParam;
+    }
+  }
+
+  // Change language and reload page content
+  changeLanguage(newLang) {
+    // Update config
+    this.config.lang = newLang;
+    
+    // Update URL with new language parameter
+    const url = new URL(window.location);
+    url.searchParams.set('lang', newLang);
+    
+    // Use replaceState to avoid adding to browser history
+    window.history.replaceState({}, '', url);
+    
+    // Reload page content with new language
+    this.reloadCurrentPage();
+  }
+
+  // Reload the current page content with updated language
+  reloadCurrentPage() {
+    // Re-route to current page to refresh content with new language
+    this.route();
+  }
+
   t(key) {
-    // Simple translation function
-    return key;
+    const lang = this.config.lang || 'en';
+    return this.translations[lang][key] || this.translations['en'][key] || key;
   }
 
   getSessionToken() {
@@ -1176,6 +1596,11 @@ class PCPartsShop {
     const url = params.toString() ? `/products?${params}` : '/products';
     window.history.pushState({}, '', url);
     this.showProductsPage(params);
+  }
+
+  navigateToHome() {
+    window.history.pushState({}, '', '/');
+    this.showHomePage();
   }
 
   async searchProducts(query) {

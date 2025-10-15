@@ -133,7 +133,24 @@ export const translations = {
     'sort.nameAsc': 'Name: A to Z',
     'sort.nameDesc': 'Name: Z to A',
     'sort.newest': 'Newest First',
-    'sort.oldest': 'Oldest First'
+    'sort.oldest': 'Oldest First',
+    
+    // Site content
+    'PC Parts Shop': 'PC Parts Shop',
+    'High Performance Computer Components': 'High Performance Computer Components',
+    'Professional PC parts and components store. High-performance CPUs, GPUs, motherboards, memory, and more.': 'Professional PC parts and components store. High-performance CPUs, GPUs, motherboards, memory, and more.',
+    'Search products...': 'Search products...',
+    'Your trusted source for high-performance PC components.': 'Your trusted source for high-performance PC components.',
+    'Processors': 'Processors',
+    'Graphics Cards': 'Graphics Cards',
+    'Motherboards': 'Motherboards',
+    'Memory': 'Memory',
+    'Help Center': 'Help Center',
+    'Returns': 'Returns',
+    'Shipping': 'Shipping',
+    'Contact Us': 'Contact Us',
+    'Follow Us': 'Follow Us',
+    'All rights reserved.': 'All rights reserved.'
   },
   jp: {
     // Navigation
@@ -267,7 +284,24 @@ export const translations = {
     'sort.nameAsc': '名前: A-Z',
     'sort.nameDesc': '名前: Z-A',
     'sort.newest': '新しい順',
-    'sort.oldest': '古い順'
+    'sort.oldest': '古い順',
+    
+    // Site content
+    'PC Parts Shop': 'PCパーツショップ',
+    'High Performance Computer Components': '高性能コンピューターコンポーネント',
+    'Professional PC parts and components store. High-performance CPUs, GPUs, motherboards, memory, and more.': 'プロ用PCパーツおよびコンポーネントストア。高性能CPU、GPU、マザーボード、メモリなど。',
+    'Search products...': '製品を検索...',
+    'Your trusted source for high-performance PC components.': '高性能PCコンポーネントの信頼できるソース。',
+    'Processors': 'プロセッサー',
+    'Graphics Cards': 'グラフィックカード',
+    'Motherboards': 'マザーボード',
+    'Memory': 'メモリ',
+    'Help Center': 'ヘルプセンター',
+    'Returns': '返品',
+    'Shipping': '配送',
+    'Contact Us': 'お問い合わせ',
+    'Follow Us': 'フォローしてください',
+    'All rights reserved.': 'すべての権利が保留されています。'
   }
 };
 

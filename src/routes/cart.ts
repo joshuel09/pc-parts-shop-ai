@@ -73,10 +73,32 @@ cart.post('/items', async (c) => {
     }
 
     const sessionToken = getSessionToken(c);
-    const db = new DatabaseService(c.env.DB);
+    
+    // Get or create session ID
+    let sessionQuery = `
+      SELECT id FROM shopping_sessions 
+      WHERE session_token = ? AND expires_at > datetime('now')
+    `;
+    let session = await c.env.DB.prepare(sessionQuery).bind(sessionToken).first<{id: number}>();
+    
+    let sessionId: number;
+    if (!session) {
+      // Create new session
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+      const createSessionQuery = `
+        INSERT INTO shopping_sessions (session_token, expires_at, created_at)
+        VALUES (?, ?, datetime('now'))
+      `;
+      const result = await c.env.DB.prepare(createSessionQuery).bind(sessionToken, expiresAt).run();
+      sessionId = result.meta.last_row_id as number;
+    } else {
+      sessionId = session.id;
+    }
 
-    // Check if product exists and is available
-    const product = await db.getProduct(productId);
+    // Get product price
+    const productQuery = `SELECT price, inventory_quantity FROM products WHERE id = ?`;
+    const product = await c.env.DB.prepare(productQuery).bind(productId).first<{price: number, inventory_quantity: number}>();
+    
     if (!product) {
       return c.json({
         success: false,
@@ -84,21 +106,38 @@ cart.post('/items', async (c) => {
       }, 404);
     }
 
-    // Check inventory
-    const availableQuantity = variantId 
-      ? (product.variants?.find(v => v.id === variantId)?.inventory_quantity || 0)
-      : product.inventory_quantity;
-
-    if (availableQuantity < quantity) {
+    if (product.inventory_quantity < quantity) {
       return c.json({
         success: false,
         error: 'Insufficient inventory'
       }, 400);
     }
 
-    await db.addToCart(sessionToken, productId, variantId, quantity);
+    // Check if item already exists in cart
+    const existingQuery = `
+      SELECT id, quantity FROM cart_items 
+      WHERE session_id = ? AND product_id = ? AND product_variant_id IS NULL
+    `;
+    const existing = await c.env.DB.prepare(existingQuery).bind(sessionId, productId).first<{id: number, quantity: number}>();
+
+    if (existing) {
+      // Update existing item
+      const updateQuery = `
+        UPDATE cart_items SET quantity = ?, updated_at = datetime('now') 
+        WHERE id = ?
+      `;
+      await c.env.DB.prepare(updateQuery).bind(existing.quantity + quantity, existing.id).run();
+    } else {
+      // Add new item
+      const insertQuery = `
+        INSERT INTO cart_items (session_id, product_id, product_variant_id, quantity, price, created_at, updated_at)
+        VALUES (?, ?, NULL, ?, ?, datetime('now'), datetime('now'))
+      `;
+      await c.env.DB.prepare(insertQuery).bind(sessionId, productId, quantity, product.price).run();
+    }
 
     // Get updated cart
+    const db = new DatabaseService(c.env.DB);
     const items = await db.getCartItems(sessionToken);
     const summary = calculateCartSummary(items);
 

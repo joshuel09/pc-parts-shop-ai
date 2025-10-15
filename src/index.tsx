@@ -152,8 +152,8 @@ app.get('*', (c) => {
                     <!-- Logo -->
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <h1 class="text-2xl font-bold text-primary-600">
-                                <i class="fas fa-microchip mr-2"></i>
+                            <h1 id="logoLink" class="text-2xl font-bold text-primary-600 cursor-pointer hover:text-primary-700 transition-colors duration-200">
+                                <i class="fas fa-microchip mr-2 transition-transform duration-200 hover:rotate-12"></i>
                                 PC Parts Shop
                             </h1>
                         </div>
@@ -184,7 +184,7 @@ app.get('*', (c) => {
                         <div class="relative">
                             <button id="cartBtn" class="text-gray-600 hover:text-primary-600 relative">
                                 <i class="fas fa-shopping-cart text-xl"></i>
-                                <span id="cartCount" class="absolute -top-2 -right-2 bg-secondary-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                                <span id="cartCount" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center hidden min-w-5 animate-pulse">0</span>
                             </button>
                         </div>
                         

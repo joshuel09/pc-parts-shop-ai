@@ -76,6 +76,12 @@
 ### ✅ Completed Features
 1. **Product Catalog System**
    - Multi-language product listings (EN/JP)
+   - **Enhanced Interactive Category Cards** ✅ NEW
+     - **Unique icons and color themes** for each category (CPU, GPU, etc.)
+     - **Hover animations** with scale and color transitions
+     - **Product counts** displayed on each category card
+     - **Clickable category cards** with smooth navigation
+     - **Dedicated categories page** (/categories) with expanded view
    - **Working category navigation** with clickable category pages
    - **Advanced filtering** (category, brand, price range, stock status)
    - **Real-time search** with debounced input
@@ -87,12 +93,15 @@
    - Multiple image views per product
    - Inventory management
 
-2. **Shopping Cart System**
-   - Session-based cart for guests
-   - Add/remove/update cart items
-   - Cart persistence across sessions
-   - Price calculations with tax and shipping
-   - Guest checkout support
+2. **Shopping Cart System** ✅ WORKING
+   - **Session-based cart** for guests with persistent storage
+   - **Add/remove/update cart items** with real-time quantity management
+   - **Cart persistence** across sessions with 7-day expiration
+   - **Automatic price calculations** with tax (10%) and shipping (free over ¥10,000)
+   - **Animated cart badge** with bounce effect when items are added
+   - **Cart count display** in navigation with red badge (hidden when empty)
+   - **Cart modal** with item list, quantities, pricing breakdown
+   - **Guest checkout support** with session token management
 
 3. **User Authentication**
    - User registration and login
@@ -108,16 +117,20 @@
    - Low stock alerts
    - User management capabilities
 
-5. **Multi-language Support**
-   - Full EN/JP localization
-   - Language detection and switching
-   - Localized product content
-   - Multi-language URLs and navigation
+5. **Multi-language Support** ✅ WORKING
+   - **Full EN/JP localization** with complete translation dictionaries
+   - **Working language detection** from URL parameters (?lang=en/jp)
+   - **Functional language switching** via dropdown in navigation
+   - **Real-time content translation** - frontend dynamically updates when language is switched
+   - **Localized product content** for categories, products, and UI text
+   - **Multi-language URLs** with proper backend integration
+   - **Bilingual API responses** supporting both English and Japanese content
 
 6. **Modern Material Design UI**
    - Responsive design with Tailwind CSS
    - Material Design components and elevation
    - **Interactive category and product navigation**
+   - **Clickable logo navigation** ✅ NEW - Logo returns to homepage from any page
    - **Breadcrumb navigation** with proper routing
    - **Browser history integration** (back/forward buttons work)
    - Mobile-first responsive layout
@@ -150,15 +163,37 @@
 
 ### For Customers
 1. **Browse Products**: Visit the homepage to see featured products and categories
-2. **Navigate Categories**: **Click any category card** to view products in that category
+2. **Navigate Categories** ✅ ENHANCED: 
+   - **Click any category card** on homepage to view products in that category
+   - **Use "Browse Categories" button** in hero section for expanded category view
+   - **Visit dedicated categories page** at /categories for complete category overview
+   - **Interactive hover effects** with unique icons, colors, and animations
+   - **Visual product counts** for each category with descriptive text
+   - **Smooth navigation** with proper URL routing and browser history support
 3. **Product Search**: Use the search bar to find specific products across all categories
 4. **Advanced Filtering**: Use brand, price range, and stock filters on category/product pages
 5. **Sort Products**: Sort by price, name, or date in any product listing
 6. **Navigate Pages**: Use pagination controls to browse through product listings
-7. **Add to Cart**: Click "Add to Cart" on any product page
-8. **Manage Cart**: View cart by clicking the cart icon in the navigation
-9. **Language Switch**: Use the language dropdown (EN/JP) in the top navigation
+7. **Add to Cart** ✅ WORKING: Click "Add to Cart" on any product page
+   - **Instant feedback**: Cart badge animates and shows updated count
+   - **Smart inventory checking**: Prevents adding more items than available
+   - **Price calculation**: Automatic subtotal, tax, and shipping calculations
+8. **Manage Cart** ✅ WORKING: View cart by clicking the cart icon in the navigation
+   - **Animated cart badge**: Red badge with item count (hidden when empty)
+   - **Full cart modal**: Shows all items with thumbnails, names, quantities, prices
+   - **Quantity controls**: Increase/decrease quantities or remove items
+   - **Price breakdown**: Subtotal, tax (10%), shipping (free over ¥10,000), total
+   - **Continue shopping** or proceed to **checkout**
+9. **Language Switch**: **WORKING** - Use the language dropdown (EN/JP) in the top navigation
+   - Click EN/JP dropdown to switch between English and Japanese
+   - **Page content updates instantly** without requiring manual page reload
+   - All text, categories, products, and navigation elements translate properly
+   - URL automatically updates with ?lang=en or ?lang=jp parameter
 10. **Browser Navigation**: Use back/forward buttons - all pages support proper URL routing
+11. **Logo Navigation** ✅ NEW: **Click the PC Parts Shop logo** to return to homepage from any page
+    - Logo has hover effects with color change and subtle scaling
+    - Microchip icon rotates on hover for visual feedback
+    - Smooth transitions and proper browser history support
 
 ### For Administrators
 1. **Admin Access**: Login with admin credentials to access admin features
@@ -250,6 +285,14 @@ npm run db:console:local
 
 **✅ Real Product Images**: All major categories now feature high-quality product photos showing actual PC components, retail packaging, and in-system installations.
 
+**✅ Enhanced Category Cards**: Interactive category navigation with:
+- **9 Unique Category Icons**: Custom FontAwesome icons for each category (processors, graphics cards, motherboards, memory, storage, power supplies, cases, cooling, peripherals)
+- **Color-Coded Themes**: Each category has its own color scheme (blue for processors, green for graphics cards, purple for motherboards, etc.)
+- **Hover Animations**: Scale effects, icon rotation, gradient overlays, and smooth transitions
+- **Smart Navigation**: Dedicated categories page (/categories) plus integrated homepage cards
+- **Bilingual Support**: All category names, descriptions, and UI elements fully localized
+- **Product Count Display**: Real-time product counts with icons
+
 ## Architecture Highlights
 - **Edge-First Design**: Built for Cloudflare Workers edge network
 - **Material Design**: Modern UI with proper elevation and animations
@@ -263,4 +306,4 @@ npm run db:console:local
 ---
 
 *Last Updated: October 14, 2025*
-*Development Status: ✅ Complete - Ready for deployment*
+*Development Status: ✅ Complete - Language switching fully functional - Ready for deployment*

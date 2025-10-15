@@ -226,7 +226,7 @@ export class DatabaseService {
       WHERE session_id = ? AND product_id = ? AND (product_variant_id = ? OR (product_variant_id IS NULL AND ? IS NULL))
     `;
     
-    const existing = await this.db.prepare(existingQuery).bind(sessionId, productId, variantId, variantId).first<{id: number, quantity: number}>();
+    const existing = await this.db.prepare(existingQuery).bind(sessionId, productId, variantId || null, variantId || null).first<{id: number, quantity: number}>();
 
     // Get product price
     const priceQuery = variantId 
@@ -246,7 +246,7 @@ export class DatabaseService {
         INSERT INTO cart_items (session_id, product_id, product_variant_id, quantity, price, created_at, updated_at)
         VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))
       `;
-      await this.db.prepare(insertQuery).bind(sessionId, productId, variantId, quantity, price).run();
+      await this.db.prepare(insertQuery).bind(sessionId, productId, variantId || null, quantity, price).run();
     }
   }
 
