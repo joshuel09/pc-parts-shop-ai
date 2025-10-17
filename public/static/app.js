@@ -795,7 +795,7 @@ class PCPartsShop {
             ${this.t('Continue Shopping')}
           </button>
           ${this.cart.items.length > 0 ? `
-            <button onclick="app.showCheckoutPage()" class="btn btn-primary">
+            <button onclick="app.navigateTo('/checkout')" class="btn btn-primary">
               ${this.t('Checkout')}
             </button>
           ` : ''}
@@ -2994,9 +2994,7 @@ class PCPartsShop {
     }
   }
 
-  showCheckoutPage() {
-    this.showNotification('Checkout page - coming soon!', 'info');
-  }
+
 
   showAdminDashboard() {
     this.showNotification('Admin dashboard - coming soon!', 'info');
