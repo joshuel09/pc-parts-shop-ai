@@ -101,34 +101,47 @@ class PCPartsShop {
     const path = window.location.pathname;
     const params = new URLSearchParams(window.location.search);
     
-    // Execute the appropriate page method
-    if (path === '/' || path === '/home') {
-      await this.showHomePage();
-    } else if (path === '/products') {
-      await this.showProductsPage(params);
-    } else if (path.startsWith('/product/')) {
-      const productId = path.split('/')[2];
-      await this.showProductPage(productId);
-    } else if (path === '/categories') {
-      await this.showCategoriesPage();
-    } else if (path.startsWith('/category/')) {
-      const categorySlug = path.split('/')[2];
-      await this.showCategoryPage(categorySlug, params);
-    } else if (path === '/cart') {
-      await this.showCartPage();
-    } else if (path === '/checkout') {
-      await this.showCheckoutPage();
-    } else if (path === '/checkout/success') {
-      this.showOrderSuccessPage();
-    } else if (path.startsWith('/orders/')) {
-      const orderId = path.split('/')[2];
-      await this.showOrderDetailsPage(orderId);
-    } else if (path === '/orders') {
-      await this.showOrdersPage();
-    } else if (path === '/admin') {
+    // Show/hide main header and footer based on admin mode
+    const mainNav = document.querySelector('nav');
+    const mainFooter = document.querySelector('footer');
+    
+    if (path === '/admin') {
+      // Hide main header/footer for admin
+      if (mainNav) mainNav.style.display = 'none';
+      if (mainFooter) mainFooter.style.display = 'none';
       this.showAdminDashboard();
     } else {
-      await this.showHomePage();
+      // Show main header/footer for regular pages
+      if (mainNav) mainNav.style.display = '';
+      if (mainFooter) mainFooter.style.display = '';
+      
+      // Execute the appropriate page method
+      if (path === '/' || path === '/home') {
+        await this.showHomePage();
+      } else if (path === '/products') {
+        await this.showProductsPage(params);
+      } else if (path.startsWith('/product/')) {
+        const productId = path.split('/')[2];
+        await this.showProductPage(productId);
+      } else if (path === '/categories') {
+        await this.showCategoriesPage();
+      } else if (path.startsWith('/category/')) {
+        const categorySlug = path.split('/')[2];
+        await this.showCategoryPage(categorySlug, params);
+      } else if (path === '/cart') {
+        await this.showCartPage();
+      } else if (path === '/checkout') {
+        await this.showCheckoutPage();
+      } else if (path === '/checkout/success') {
+        this.showOrderSuccessPage();
+      } else if (path.startsWith('/orders/')) {
+        const orderId = path.split('/')[2];
+        await this.showOrderDetailsPage(orderId);
+      } else if (path === '/orders') {
+        await this.showOrdersPage();
+      } else {
+        await this.showHomePage();
+      }
     }
     
     // Scroll to top after page content is rendered
@@ -3005,8 +3018,1502 @@ class PCPartsShop {
 
 
 
+  // ========== ADMIN FUNCTIONALITY ==========
+
   showAdminDashboard() {
-    this.showNotification('Admin dashboard - coming soon!', 'info');
+    // Check if user is admin
+    if (!this.currentUser || this.currentUser.role !== 'admin') {
+      this.showAdminLogin();
+      return;
+    }
+
+    // Hide the main site header
+    const mainNav = document.querySelector('nav');
+    if (mainNav) {
+      mainNav.style.display = 'none';
+    }
+
+    // Hide the main footer
+    const mainFooter = document.querySelector('footer');
+    if (mainFooter) {
+      mainFooter.style.display = 'none';
+    }
+
+    const app = document.getElementById('app');
+    app.innerHTML = `
+      <div class="min-h-screen bg-gray-100">
+        <!-- Admin Header -->
+        <div class="bg-white shadow">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-6">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <h1 class="text-2xl font-bold text-gray-900">
+                    <i class="fas fa-shield-alt text-blue-600 mr-2"></i>
+                    Admin Dashboard
+                  </h1>
+                </div>
+              </div>
+              <div class="flex items-center space-x-4">
+                <span class="text-sm text-gray-600">Welcome, ${this.currentUser.first_name}</span>
+                <button onclick="app.navigateToHome()" class="text-blue-600 hover:text-blue-800">
+                  <i class="fas fa-home mr-1"></i>
+                  Back to Store
+                </button>
+                <button onclick="app.logout()" class="text-red-600 hover:text-red-800">
+                  <i class="fas fa-sign-out-alt mr-1"></i>
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Admin Navigation -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+          <div class="mb-6">
+            <nav class="flex space-x-8" id="adminNav">
+              <button onclick="app.showAdminSection('dashboard')" 
+                      class="admin-nav-btn active px-3 py-2 rounded-md text-sm font-medium">
+                <i class="fas fa-chart-line mr-2"></i>Dashboard
+              </button>
+              <button onclick="app.showAdminSection('products')" 
+                      class="admin-nav-btn px-3 py-2 rounded-md text-sm font-medium">
+                <i class="fas fa-box mr-2"></i>Products
+              </button>
+              <button onclick="app.showAdminSection('orders')" 
+                      class="admin-nav-btn px-3 py-2 rounded-md text-sm font-medium">
+                <i class="fas fa-shopping-cart mr-2"></i>Orders
+              </button>
+              <button onclick="app.showAdminSection('users')" 
+                      class="admin-nav-btn px-3 py-2 rounded-md text-sm font-medium">
+                <i class="fas fa-users mr-2"></i>Users
+              </button>
+            </nav>
+          </div>
+
+          <!-- Admin Content -->
+          <div id="adminContent">
+            <!-- Dashboard content will be loaded here -->
+          </div>
+        </div>
+      </div>
+
+      <style>
+        .admin-nav-btn {
+          @apply text-gray-500 hover:text-gray-700 hover:bg-gray-100;
+        }
+        .admin-nav-btn.active {
+          @apply text-blue-600 bg-blue-100;
+        }
+        .admin-card {
+          @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6;
+        }
+        .admin-table th {
+          @apply px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider;
+        }
+        .admin-table td {
+          @apply px-6 py-4 whitespace-nowrap text-sm text-gray-900;
+        }
+      </style>
+    `;
+
+    // Show dashboard by default
+    this.showAdminSection('dashboard');
+  }
+
+  showAdminLogin() {
+    // Hide the main site header
+    const mainNav = document.querySelector('nav');
+    if (mainNav) {
+      mainNav.style.display = 'none';
+    }
+
+    // Hide the main footer
+    const mainFooter = document.querySelector('footer');
+    if (mainFooter) {
+      mainFooter.style.display = 'none';
+    }
+
+    const app = document.getElementById('app');
+    app.innerHTML = `
+      <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+          <div>
+            <div class="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-blue-100">
+              <i class="fas fa-shield-alt text-blue-600 text-xl"></i>
+            </div>
+            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+              Admin Access
+            </h2>
+            <p class="mt-2 text-center text-sm text-gray-600">
+              Sign in to access the admin dashboard
+            </p>
+          </div>
+          
+          <form class="mt-8 space-y-6" onsubmit="app.handleAdminLogin(event)">
+            <div class="rounded-md shadow-sm -space-y-px">
+              <div>
+                <label for="admin-username" class="sr-only">Username</label>
+                <input id="admin-username" name="username" type="text" required 
+                       class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" 
+                       placeholder="Username">
+              </div>
+              <div>
+                <label for="admin-password" class="sr-only">Password</label>
+                <input id="admin-password" name="password" type="password" required 
+                       class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" 
+                       placeholder="Password">
+              </div>
+            </div>
+
+            <div>
+              <button type="submit" id="adminLoginBtn" 
+                      class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                  <i class="fas fa-lock text-blue-500 group-hover:text-blue-400"></i>
+                </span>
+                Sign in
+              </button>
+            </div>
+
+            <div class="text-center">
+              <button type="button" onclick="app.navigateToHome()" 
+                      class="text-blue-600 hover:text-blue-500 text-sm">
+                ← Back to Store
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+  }
+
+  async handleAdminLogin(event) {
+    event.preventDefault();
+    
+    const username = document.getElementById('admin-username').value;
+    const password = document.getElementById('admin-password').value;
+    const loginBtn = document.getElementById('adminLoginBtn');
+
+    try {
+      loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Signing in...';
+      loginBtn.disabled = true;
+
+      const response = await axios.post('/admin/login', {
+        username,
+        password
+      });
+
+      if (response.data.success) {
+        const { user, token } = response.data.data;
+        
+        // Set current user and auth token
+        this.currentUser = user;
+        localStorage.setItem('authToken', token);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        
+        this.showNotification('Admin login successful', 'success');
+        this.showAdminDashboard();
+      } else {
+        this.showNotification(response.data.error || 'Login failed', 'error');
+      }
+    } catch (error) {
+      console.error('Admin login error:', error);
+      this.showNotification(error.response?.data?.error || 'Login failed', 'error');
+    } finally {
+      loginBtn.innerHTML = 'Sign in';
+      loginBtn.disabled = false;
+    }
+  }
+
+  showAdminSection(section) {
+    // Update navigation
+    document.querySelectorAll('.admin-nav-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+
+    // Show appropriate section
+    switch (section) {
+      case 'dashboard':
+        this.showAdminDashboardSection();
+        break;
+      case 'products':
+        this.showAdminProductsSection();
+        break;
+      case 'orders':
+        this.showAdminOrdersSection();
+        break;
+      case 'users':
+        this.showAdminUsersSection();
+        break;
+    }
+  }
+
+  async showAdminDashboardSection() {
+    const content = document.getElementById('adminContent');
+    content.innerHTML = `
+      <div id="dashboardLoading" class="text-center py-8">
+        <i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i>
+        <p class="mt-2 text-gray-500">Loading dashboard...</p>
+      </div>
+    `;
+
+    try {
+      const response = await axios.get('/admin/dashboard');
+      const stats = response.data.data;
+
+      content.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <!-- Stats Cards -->
+          <div class="admin-card">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <i class="fas fa-users text-2xl text-blue-500"></i>
+              </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="text-sm font-medium text-gray-500 truncate">Total Users</dt>
+                  <dd class="text-lg font-medium text-gray-900">${stats.total_users.toLocaleString()}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-card">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <i class="fas fa-box text-2xl text-green-500"></i>
+              </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="text-sm font-medium text-gray-500 truncate">Total Products</dt>
+                  <dd class="text-lg font-medium text-gray-900">${stats.total_products.toLocaleString()}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-card">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <i class="fas fa-shopping-cart text-2xl text-yellow-500"></i>
+              </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="text-sm font-medium text-gray-500 truncate">Total Orders</dt>
+                  <dd class="text-lg font-medium text-gray-900">${stats.total_orders.toLocaleString()}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-card">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <i class="fas fa-yen-sign text-2xl text-purple-500"></i>
+              </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="text-sm font-medium text-gray-500 truncate">Total Revenue</dt>
+                  <dd class="text-lg font-medium text-gray-900">¥${(stats.total_revenue || 0).toLocaleString()}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <!-- Recent Orders -->
+          <div class="admin-card">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Recent Orders</h3>
+            <div class="overflow-hidden">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="admin-table th">Order ID</th>
+                    <th class="admin-table th">Customer</th>
+                    <th class="admin-table th">Amount</th>
+                    <th class="admin-table th">Status</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  ${stats.recent_orders.slice(0, 5).map(order => `
+                    <tr>
+                      <td class="admin-table td">#${order.id}</td>
+                      <td class="admin-table td">${order.first_name} ${order.last_name}</td>
+                      <td class="admin-table td">¥${order.total_amount.toLocaleString()}</td>
+                      <td class="admin-table td">
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full ${this.getStatusColor(order.status)}">
+                          ${order.status}
+                        </span>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Low Stock Products -->
+          <div class="admin-card">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Low Stock Alert</h3>
+            <div class="space-y-3">
+              ${stats.low_stock_products.length ? stats.low_stock_products.map(product => `
+                <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                  <div class="flex items-center">
+                    <i class="fas fa-exclamation-triangle text-red-500 mr-3"></i>
+                    <div>
+                      <p class="text-sm font-medium text-gray-900">${product.name}</p>
+                      <p class="text-xs text-gray-500">Stock: ${product.stock_quantity}</p>
+                    </div>
+                  </div>
+                  <button onclick="app.showAdminSection('products')" 
+                          class="text-xs text-blue-600 hover:text-blue-800">
+                    Manage
+                  </button>
+                </div>
+              `).join('') : '<p class="text-gray-500 text-center py-4">All products have sufficient stock</p>'}
+            </div>
+          </div>
+        </div>
+
+        ${stats.monthly_sales.length ? `
+          <div class="mt-8">
+            <div class="admin-card">
+              <h3 class="text-lg font-medium text-gray-900 mb-4">Monthly Sales</h3>
+              <div class="h-64">
+                <canvas id="salesChart"></canvas>
+              </div>
+            </div>
+          </div>
+        ` : ''}
+      `;
+
+      // Create sales chart if data available
+      if (stats.monthly_sales.length) {
+        this.createSalesChart(stats.monthly_sales);
+      }
+
+    } catch (error) {
+      console.error('Dashboard load error:', error);
+      content.innerHTML = `
+        <div class="text-center py-8 text-red-500">
+          <i class="fas fa-exclamation-circle text-2xl mb-2"></i>
+          <p>Error loading dashboard data</p>
+        </div>
+      `;
+    }
+  }
+
+  createSalesChart(salesData) {
+    const ctx = document.getElementById('salesChart');
+    if (!ctx) return;
+
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: salesData.map(d => new Date(d.month).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })),
+        datasets: [
+          {
+            label: 'Revenue (¥)',
+            data: salesData.map(d => d.revenue || 0),
+            borderColor: 'rgb(59, 130, 246)',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            tension: 0.1
+          },
+          {
+            label: 'Orders',
+            data: salesData.map(d => d.orders || 0),
+            borderColor: 'rgb(16, 185, 129)',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            tension: 0.1,
+            yAxisID: 'y1'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
+        scales: {
+          y: {
+            type: 'linear',
+            display: true,
+            position: 'left',
+          },
+          y1: {
+            type: 'linear',
+            display: true,
+            position: 'right',
+            grid: {
+              drawOnChartArea: false,
+            },
+          }
+        }
+      }
+    });
+  }
+
+  getStatusColor(status) {
+    const colors = {
+      pending: 'bg-yellow-100 text-yellow-800',
+      processing: 'bg-blue-100 text-blue-800',
+      shipped: 'bg-purple-100 text-purple-800',
+      delivered: 'bg-green-100 text-green-800',
+      cancelled: 'bg-red-100 text-red-800'
+    };
+    return colors[status] || 'bg-gray-100 text-gray-800';
+  }
+
+  async showAdminProductsSection() {
+    const content = document.getElementById('adminContent');
+    content.innerHTML = `
+      <div class="admin-card">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-semibold text-gray-900">Product Management</h2>
+          <button onclick="app.showAddProductForm()" 
+                  class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+            <i class="fas fa-plus mr-2"></i>Add Product
+          </button>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <input type="text" id="productSearch" placeholder="Search products..." 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   onkeyup="app.debounceProductSearch(this.value)">
+          </div>
+          <div>
+            <select id="categoryFilter" onchange="app.filterProducts()" 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">All Categories</option>
+              <option value="CPU">CPU</option>
+              <option value="GPU">GPU</option>
+              <option value="Motherboard">Motherboard</option>
+              <option value="Memory">Memory</option>
+              <option value="Storage">Storage</option>
+              <option value="Power Supply">Power Supply</option>
+              <option value="Case">Case</option>
+              <option value="Cooling">Cooling</option>
+            </select>
+          </div>
+          <div>
+            <select id="stockFilter" onchange="app.filterProducts()" 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">All Stock Levels</option>
+              <option value="low">Low Stock (< 10)</option>
+              <option value="out">Out of Stock</option>
+              <option value="in">In Stock</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Products Table -->
+        <div id="productsTableContainer">
+          <div class="text-center py-8">
+            <i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i>
+            <p class="mt-2 text-gray-500">Loading products...</p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    this.loadAdminProducts();
+  }
+
+  async loadAdminProducts(page = 1, filters = {}) {
+    const container = document.getElementById('productsTableContainer');
+    
+    try {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: '20',
+        ...filters
+      });
+
+      const response = await axios.get(`/admin/products?${params}`);
+      const data = response.data.data;
+
+      container.innerHTML = `
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="admin-table th">Product</th>
+                <th class="admin-table th">Category</th>
+                <th class="admin-table th">Price</th>
+                <th class="admin-table th">Stock</th>
+                <th class="admin-table th">Sales</th>
+                <th class="admin-table th">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              ${data.products.map(product => `
+                <tr>
+                  <td class="admin-table td">
+                    <div class="flex items-center">
+                      <img class="h-10 w-10 rounded-lg object-cover mr-3" 
+                           src="${product.image_url || '/static/placeholder.svg'}" 
+                           alt="${product.name_en || product.name}">
+                      <div>
+                        <div class="text-sm font-medium text-gray-900">${product.name_en || product.name}</div>
+                        <div class="text-sm text-gray-500">${product.category || 'N/A'}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="admin-table td">
+                    <span class="px-2 py-1 text-xs font-semibold bg-gray-100 text-gray-800 rounded-full">
+                      ${product.category}
+                    </span>
+                  </td>
+                  <td class="admin-table td">¥${product.price.toLocaleString()}</td>
+                  <td class="admin-table td">
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full ${
+                      product.stock_quantity === 0 ? 'bg-red-100 text-red-800' :
+                      product.stock_quantity < 10 ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-green-100 text-green-800'
+                    }">
+                      ${product.stock_quantity}
+                    </span>
+                  </td>
+                  <td class="admin-table td">${product.total_sold || 0}</td>
+                  <td class="admin-table td">
+                    <div class="flex space-x-2">
+                      <button onclick="app.showEditProductForm(${product.id})" 
+                              class="text-blue-600 hover:text-blue-800 text-sm">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button onclick="app.deleteProduct(${product.id})" 
+                              class="text-red-600 hover:text-red-800 text-sm">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        ${this.createPagination(data.pagination, (page) => this.loadAdminProducts(page, filters))}
+      `;
+
+    } catch (error) {
+      console.error('Load products error:', error);
+      container.innerHTML = `
+        <div class="text-center py-8 text-red-500">
+          <i class="fas fa-exclamation-circle text-2xl mb-2"></i>
+          <p>Error loading products</p>
+        </div>
+      `;
+    }
+  }
+
+  debounceProductSearch = this.debounce((value) => {
+    this.filterProducts();
+  }, 300);
+
+  filterProducts() {
+    const search = document.getElementById('productSearch').value;
+    const category = document.getElementById('categoryFilter').value;
+    const stockFilter = document.getElementById('stockFilter').value;
+
+    const filters = {};
+    if (search) filters.search = search;
+    if (category) filters.category = category;
+    
+    this.loadAdminProducts(1, filters);
+  }
+
+  showAddProductForm() {
+    this.showProductForm();
+  }
+
+  async showEditProductForm(productId) {
+    try {
+      const response = await axios.get(`/admin/products/${productId}`);
+      const product = response.data.data;
+      this.showProductForm(product);
+    } catch (error) {
+      console.error('Load product error:', error);
+      this.showNotification('Failed to load product', 'error');
+    }
+  }
+
+  showProductForm(product = null) {
+    const isEdit = !!product;
+    const title = isEdit ? 'Edit Product' : 'Add New Product';
+
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modal.onclick = (e) => {
+      if (e.target === modal) {
+        modal.remove();
+      }
+    };
+    modal.innerHTML = `
+      <div class="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
+        <div class="p-6">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg font-medium text-gray-900">${title}</h3>
+            <button onclick="this.closest('.fixed').remove()" 
+                    class="text-gray-400 hover:text-gray-600">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+
+          <form onsubmit="app.handleProductForm(event, ${isEdit ? product.id : 'null'})">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Product Name</label>
+                <input type="text" name="name" required 
+                       value="${product?.name || ''}"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                <select name="category" required 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="">Select Category</option>
+                  <option value="CPU" ${product?.category === 'CPU' ? 'selected' : ''}>CPU</option>
+                  <option value="GPU" ${product?.category === 'GPU' ? 'selected' : ''}>GPU</option>
+                  <option value="Motherboard" ${product?.category === 'Motherboard' ? 'selected' : ''}>Motherboard</option>
+                  <option value="Memory" ${product?.category === 'Memory' ? 'selected' : ''}>Memory</option>
+                  <option value="Storage" ${product?.category === 'Storage' ? 'selected' : ''}>Storage</option>
+                  <option value="Power Supply" ${product?.category === 'Power Supply' ? 'selected' : ''}>Power Supply</option>
+                  <option value="Case" ${product?.category === 'Case' ? 'selected' : ''}>Case</option>
+                  <option value="Cooling" ${product?.category === 'Cooling' ? 'selected' : ''}>Cooling</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Brand</label>
+                <input type="text" name="brand" required 
+                       value="${product?.brand || ''}"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Price (¥)</label>
+                <input type="number" name="price" required min="0" step="0.01"
+                       value="${product?.price || ''}"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Stock Quantity</label>
+                <input type="number" name="stock_quantity" required min="0"
+                       value="${product?.stock_quantity || ''}"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              </div>
+
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Image URL</label>
+                <input type="url" name="image_url" 
+                       value="${product?.image_url || ''}"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              </div>
+
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <textarea name="description" rows="3"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">${product?.description || ''}</textarea>
+              </div>
+            </div>
+
+            <div class="flex justify-end space-x-3 mt-6">
+              <button type="button" onclick="this.closest('.fixed').remove()" 
+                      class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md">
+                Cancel
+              </button>
+              <button type="submit" 
+                      class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md">
+                ${isEdit ? 'Update' : 'Create'} Product
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+  }
+
+  async handleProductForm(event, productId) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    
+    // Parse specs if provided
+    data.specs = {};
+    data.price = parseFloat(data.price);
+    data.stock_quantity = parseInt(data.stock_quantity);
+
+    try {
+      let response;
+      if (productId) {
+        response = await axios.put(`/admin/products/${productId}`, data);
+      } else {
+        response = await axios.post('/admin/products', data);
+      }
+
+      if (response.data.success) {
+        this.showNotification(
+          `Product ${productId ? 'updated' : 'created'} successfully`, 
+          'success'
+        );
+        form.closest('.fixed').remove();
+        this.loadAdminProducts();
+      }
+    } catch (error) {
+      console.error('Product form error:', error);
+      this.showNotification(
+        error.response?.data?.error || 'Failed to save product', 
+        'error'
+      );
+    }
+  }
+
+  async deleteProduct(productId) {
+    if (!confirm('Are you sure you want to delete this product?')) {
+      return;
+    }
+
+    try {
+      const response = await axios.delete(`/admin/products/${productId}`);
+      
+      if (response.data.success) {
+        this.showNotification('Product deleted successfully', 'success');
+        this.loadAdminProducts();
+      }
+    } catch (error) {
+      console.error('Delete product error:', error);
+      this.showNotification(
+        error.response?.data?.error || 'Failed to delete product', 
+        'error'
+      );
+    }
+  }
+
+  async showAdminOrdersSection() {
+    const content = document.getElementById('adminContent');
+    content.innerHTML = `
+      <div class="admin-card">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-semibold text-gray-900">Order Management</h2>
+        </div>
+
+        <!-- Filters -->
+        <div class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <input type="text" id="orderSearch" placeholder="Search by customer email..." 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   onkeyup="app.debounceOrderSearch(this.value)">
+          </div>
+          <div>
+            <select id="orderStatusFilter" onchange="app.filterOrders()" 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="processing">Processing</option>
+              <option value="shipped">Shipped</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div>
+            <input type="date" id="orderDateFilter" onchange="app.filterOrders()"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+        </div>
+
+        <!-- Orders Table -->
+        <div id="ordersTableContainer">
+          <div class="text-center py-8">
+            <i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i>
+            <p class="mt-2 text-gray-500">Loading orders...</p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    this.loadAdminOrders();
+  }
+
+  async loadAdminOrders(page = 1, filters = {}) {
+    const container = document.getElementById('ordersTableContainer');
+    
+    try {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: '20',
+        ...filters
+      });
+
+      const response = await axios.get(`/admin/orders?${params}`);
+      const data = response.data.data;
+
+      container.innerHTML = `
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="admin-table th">Order ID</th>
+                <th class="admin-table th">Customer</th>
+                <th class="admin-table th">Items</th>
+                <th class="admin-table th">Amount</th>
+                <th class="admin-table th">Status</th>
+                <th class="admin-table th">Date</th>
+                <th class="admin-table th">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              ${data.orders.map(order => `
+                <tr>
+                  <td class="admin-table td">
+                    <div class="font-medium text-blue-600">#${order.id}</div>
+                  </td>
+                  <td class="admin-table td">
+                    <div>
+                      <div class="text-sm font-medium text-gray-900">${order.first_name} ${order.last_name}</div>
+                      <div class="text-sm text-gray-500">${order.email}</div>
+                    </div>
+                  </td>
+                  <td class="admin-table td">
+                    <span class="px-2 py-1 text-xs font-semibold bg-gray-100 text-gray-800 rounded-full">
+                      ${order.item_count} items
+                    </span>
+                  </td>
+                  <td class="admin-table td">¥${order.total_amount.toLocaleString()}</td>
+                  <td class="admin-table td">
+                    <select onchange="app.updateOrderStatus(${order.id}, this.value)" 
+                            class="text-xs px-2 py-1 rounded-full border-0 ${this.getStatusColor(order.status)}">
+                      <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
+                      <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>Processing</option>
+                      <option value="shipped" ${order.status === 'shipped' ? 'selected' : ''}>Shipped</option>
+                      <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Delivered</option>
+                      <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                    </select>
+                  </td>
+                  <td class="admin-table td">
+                    <div class="text-sm text-gray-900">${new Date(order.created_at).toLocaleDateString()}</div>
+                    <div class="text-xs text-gray-500">${new Date(order.created_at).toLocaleTimeString()}</div>
+                  </td>
+                  <td class="admin-table td">
+                    <button onclick="app.showOrderDetails(${order.id})" 
+                            class="text-blue-600 hover:text-blue-800 text-sm">
+                      <i class="fas fa-eye"></i> View
+                    </button>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        ${this.createPagination(data.pagination, (page) => this.loadAdminOrders(page, filters))}
+      `;
+
+    } catch (error) {
+      console.error('Load orders error:', error);
+      container.innerHTML = `
+        <div class="text-center py-8 text-red-500">
+          <i class="fas fa-exclamation-circle text-2xl mb-2"></i>
+          <p>Error loading orders</p>
+        </div>
+      `;
+    }
+  }
+
+  debounceOrderSearch = this.debounce((value) => {
+    this.filterOrders();
+  }, 300);
+
+  filterOrders() {
+    const search = document.getElementById('orderSearch').value;
+    const status = document.getElementById('orderStatusFilter').value;
+    const date = document.getElementById('orderDateFilter').value;
+
+    const filters = {};
+    if (search) filters.search = search;
+    if (status) filters.status = status;
+    if (date) filters.date = date;
+    
+    this.loadAdminOrders(1, filters);
+  }
+
+  async updateOrderStatus(orderId, newStatus) {
+    try {
+      const response = await axios.put(`/admin/orders/${orderId}/status`, {
+        status: newStatus
+      });
+
+      if (response.data.success) {
+        this.showNotification('Order status updated successfully', 'success');
+      }
+    } catch (error) {
+      console.error('Update order status error:', error);
+      this.showNotification('Failed to update order status', 'error');
+      // Reload to reset the select value
+      this.loadAdminOrders();
+    }
+  }
+
+  async showOrderDetails(orderId) {
+    try {
+      const response = await axios.get(`/admin/orders/${orderId}`);
+      const order = response.data.data;
+
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+      modal.onclick = (e) => {
+        if (e.target === modal) {
+          modal.remove();
+        }
+      };
+      modal.innerHTML = `
+        <div class="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-screen overflow-y-auto">
+          <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h3 class="text-lg font-medium text-gray-900">Order Details #${order.id}</h3>
+              <button onclick="this.closest('.fixed').remove()" 
+                      class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <!-- Order Info -->
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <h4 class="font-medium text-gray-900 mb-3">Order Information</h4>
+                <div class="space-y-2 text-sm">
+                  <div class="flex justify-between">
+                    <span class="text-gray-500">Status:</span>
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full ${this.getStatusColor(order.status)}">
+                      ${order.status}
+                    </span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-500">Total Amount:</span>
+                    <span class="font-medium">¥${order.total_amount.toLocaleString()}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-500">Order Date:</span>
+                    <span>${new Date(order.created_at).toLocaleString()}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-500">Payment Method:</span>
+                    <span>${order.payment_method || 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Customer Info -->
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <h4 class="font-medium text-gray-900 mb-3">Customer Information</h4>
+                <div class="space-y-2 text-sm">
+                  <div class="flex justify-between">
+                    <span class="text-gray-500">Name:</span>
+                    <span>${order.first_name} ${order.last_name}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-500">Email:</span>
+                    <span>${order.email}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-500">Phone:</span>
+                    <span>${order.phone || 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Shipping Address -->
+            ${order.shipping_address ? `
+              <div class="mt-6 bg-gray-50 p-4 rounded-lg">
+                <h4 class="font-medium text-gray-900 mb-3">Shipping Address</h4>
+                <div class="text-sm text-gray-700">
+                  ${JSON.parse(order.shipping_address).address}<br>
+                  ${JSON.parse(order.shipping_address).city}, ${JSON.parse(order.shipping_address).postalCode}
+                </div>
+              </div>
+            ` : ''}
+
+            <!-- Order Items -->
+            <div class="mt-6">
+              <h4 class="font-medium text-gray-900 mb-3">Order Items</h4>
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
+                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
+                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
+                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-200">
+                    ${order.items.map(item => `
+                      <tr>
+                        <td class="px-4 py-2">
+                          <div class="flex items-center">
+                            <img class="h-8 w-8 rounded object-cover mr-3" 
+                                 src="${item.image_url || '/static/placeholder.svg'}" 
+                                 alt="${item.name}">
+                            <div>
+                              <div class="text-sm font-medium text-gray-900">${item.name}</div>
+                              <div class="text-xs text-gray-500">${item.brand}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="px-4 py-2 text-sm text-gray-900">¥${item.price.toLocaleString()}</td>
+                        <td class="px-4 py-2 text-sm text-gray-900">${item.quantity}</td>
+                        <td class="px-4 py-2 text-sm text-gray-900">¥${(item.price * item.quantity).toLocaleString()}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="flex justify-end mt-6">
+              <button onclick="this.closest('.fixed').remove()" 
+                      class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+    } catch (error) {
+      console.error('Load order details error:', error);
+      this.showNotification('Failed to load order details', 'error');
+    }
+  }
+
+  async showAdminUsersSection() {
+    const content = document.getElementById('adminContent');
+    content.innerHTML = `
+      <div class="admin-card">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-semibold text-gray-900">User Management</h2>
+        </div>
+
+        <!-- Filters -->
+        <div class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <input type="text" id="userSearch" placeholder="Search by name or email..." 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   onkeyup="app.debounceUserSearch(this.value)">
+          </div>
+          <div>
+            <select id="userRoleFilter" onchange="app.filterUsers()" 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">All Roles</option>
+              <option value="customer">Customer</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div>
+            <select id="userStatusFilter" onchange="app.filterUsers()" 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Users Table -->
+        <div id="usersTableContainer">
+          <div class="text-center py-8">
+            <i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i>
+            <p class="mt-2 text-gray-500">Loading users...</p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    this.loadAdminUsers();
+  }
+
+  async loadAdminUsers(page = 1, filters = {}) {
+    const container = document.getElementById('usersTableContainer');
+    
+    try {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: '20',
+        ...filters
+      });
+
+      const response = await axios.get(`/admin/users?${params}`);
+      const data = response.data.data;
+
+      container.innerHTML = `
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="admin-table th">User</th>
+                <th class="admin-table th">Role</th>
+                <th class="admin-table th">Status</th>
+                <th class="admin-table th">Orders</th>
+                <th class="admin-table th">Total Spent</th>
+                <th class="admin-table th">Joined</th>
+                <th class="admin-table th">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              ${data.users.map(user => `
+                <tr>
+                  <td class="admin-table td">
+                    <div class="flex items-center">
+                      <div class="flex-shrink-0 h-10 w-10">
+                        <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                          <i class="fas fa-user text-gray-600"></i>
+                        </div>
+                      </div>
+                      <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-900">${user.first_name} ${user.last_name}</div>
+                        <div class="text-sm text-gray-500">${user.email}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="admin-table td">
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full ${
+                      user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'
+                    }">
+                      ${user.role}
+                    </span>
+                  </td>
+                  <td class="admin-table td">
+                    <div class="flex items-center">
+                      <div class="flex-shrink-0 h-2.5 w-2.5 ${user.is_active ? 'bg-green-400' : 'bg-red-400'} rounded-full mr-2"></div>
+                      <span class="text-sm text-gray-900">${user.is_active ? 'Active' : 'Inactive'}</span>
+                    </div>
+                  </td>
+                  <td class="admin-table td">${user.order_count || 0}</td>
+                  <td class="admin-table td">¥${(user.total_spent || 0).toLocaleString()}</td>
+                  <td class="admin-table td">
+                    <div class="text-sm text-gray-900">${new Date(user.created_at).toLocaleDateString()}</div>
+                  </td>
+                  <td class="admin-table td">
+                    <div class="flex space-x-2">
+                      <button onclick="app.showUserDetails(${user.id})" 
+                              class="text-blue-600 hover:text-blue-800 text-sm">
+                        <i class="fas fa-eye"></i>
+                      </button>
+                      <button onclick="app.toggleUserStatus(${user.id}, ${!user.is_active})" 
+                              class="text-${user.is_active ? 'red' : 'green'}-600 hover:text-${user.is_active ? 'red' : 'green'}-800 text-sm"
+                              title="${user.is_active ? 'Deactivate' : 'Activate'} user">
+                        <i class="fas fa-${user.is_active ? 'ban' : 'check'}"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        ${this.createPagination(data.pagination, (page) => this.loadAdminUsers(page, filters))}
+      `;
+
+    } catch (error) {
+      console.error('Load users error:', error);
+      container.innerHTML = `
+        <div class="text-center py-8 text-red-500">
+          <i class="fas fa-exclamation-circle text-2xl mb-2"></i>
+          <p>Error loading users</p>
+        </div>
+      `;
+    }
+  }
+
+  debounceUserSearch = this.debounce((value) => {
+    this.filterUsers();
+  }, 300);
+
+  filterUsers() {
+    const search = document.getElementById('userSearch').value;
+    const role = document.getElementById('userRoleFilter').value;
+    const status = document.getElementById('userStatusFilter').value;
+
+    const filters = {};
+    if (search) filters.search = search;
+    if (role) filters.role = role;
+    if (status) filters.is_active = status === 'active' ? '1' : '0';
+    
+    this.loadAdminUsers(1, filters);
+  }
+
+  async showUserDetails(userId) {
+    try {
+      const response = await axios.get(`/admin/users/${userId}`);
+      const user = response.data.data;
+
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+      modal.onclick = (e) => {
+        if (e.target === modal) {
+          modal.remove();
+        }
+      };
+      modal.innerHTML = `
+        <div class="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-screen overflow-y-auto">
+          <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h3 class="text-lg font-medium text-gray-900">User Details</h3>
+              <button onclick="this.closest('.fixed').remove()" 
+                      class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <!-- User Info -->
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <h4 class="font-medium text-gray-900 mb-3">User Information</h4>
+                <div class="space-y-2 text-sm">
+                  <div class="flex justify-between">
+                    <span class="text-gray-500">Name:</span>
+                    <span>${user.first_name} ${user.last_name}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-500">Email:</span>
+                    <span>${user.email}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-500">Role:</span>
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full ${
+                      user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'
+                    }">
+                      ${user.role}
+                    </span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-500">Status:</span>
+                    <span class="flex items-center">
+                      <div class="h-2.5 w-2.5 ${user.is_active ? 'bg-green-400' : 'bg-red-400'} rounded-full mr-2"></div>
+                      ${user.is_active ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-500">Joined:</span>
+                    <span>${new Date(user.created_at).toLocaleDateString()}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-500">Last Order:</span>
+                    <span>${user.last_order_date ? new Date(user.last_order_date).toLocaleDateString() : 'Never'}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Stats -->
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <h4 class="font-medium text-gray-900 mb-3">Statistics</h4>
+                <div class="space-y-2 text-sm">
+                  <div class="flex justify-between">
+                    <span class="text-gray-500">Total Orders:</span>
+                    <span class="font-medium">${user.order_count || 0}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-500">Total Spent:</span>
+                    <span class="font-medium">¥${(user.total_spent || 0).toLocaleString()}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-500">Average Order:</span>
+                    <span class="font-medium">¥${user.order_count ? Math.round((user.total_spent || 0) / user.order_count).toLocaleString() : 0}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Orders -->
+            ${user.recent_orders && user.recent_orders.length > 0 ? `
+              <div class="mt-6">
+                <h4 class="font-medium text-gray-900 mb-3">Recent Orders</h4>
+                <div class="overflow-x-auto">
+                  <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                      <tr>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Order ID</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Items</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                      ${user.recent_orders.map(order => `
+                        <tr>
+                          <td class="px-4 py-2 text-sm font-medium text-blue-600">#${order.id}</td>
+                          <td class="px-4 py-2 text-sm text-gray-900">${order.item_count} items</td>
+                          <td class="px-4 py-2 text-sm text-gray-900">¥${order.total_amount.toLocaleString()}</td>
+                          <td class="px-4 py-2">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full ${this.getStatusColor(order.status)}">
+                              ${order.status}
+                            </span>
+                          </td>
+                          <td class="px-4 py-2 text-sm text-gray-900">${new Date(order.created_at).toLocaleDateString()}</td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ` : ''}
+
+            <div class="flex justify-end mt-6">
+              <button onclick="this.closest('.fixed').remove()" 
+                      class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+    } catch (error) {
+      console.error('Load user details error:', error);
+      this.showNotification('Failed to load user details', 'error');
+    }
+  }
+
+  async toggleUserStatus(userId, newStatus) {
+    try {
+      const response = await axios.put(`/admin/users/${userId}/status`, {
+        is_active: newStatus
+      });
+
+      if (response.data.success) {
+        this.showNotification(
+          `User ${newStatus ? 'activated' : 'deactivated'} successfully`, 
+          'success'
+        );
+        this.loadAdminUsers();
+      }
+    } catch (error) {
+      console.error('Toggle user status error:', error);
+      this.showNotification('Failed to update user status', 'error');
+    }
+  }
+
+  // Utility method for pagination
+  createPagination(pagination, onPageClick) {
+    if (pagination.pages <= 1) return '';
+
+    const currentPage = pagination.page;
+    const totalPages = pagination.pages;
+    
+    let pages = [];
+    
+    // Always show first page
+    pages.push(1);
+    
+    // Show pages around current page
+    const start = Math.max(2, currentPage - 2);
+    const end = Math.min(totalPages - 1, currentPage + 2);
+    
+    if (start > 2) pages.push('...');
+    
+    for (let i = start; i <= end; i++) {
+      if (i !== 1 && i !== totalPages) {
+        pages.push(i);
+      }
+    }
+    
+    if (end < totalPages - 1) pages.push('...');
+    
+    // Always show last page if more than 1 page
+    if (totalPages > 1) pages.push(totalPages);
+
+    return `
+      <div class="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6">
+        <div class="flex justify-between flex-1 sm:hidden">
+          <button onclick="(${onPageClick})(${currentPage - 1})" 
+                  ${currentPage === 1 ? 'disabled' : ''}
+                  class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+            Previous
+          </button>
+          <button onclick="(${onPageClick})(${currentPage + 1})" 
+                  ${currentPage === totalPages ? 'disabled' : ''}
+                  class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+            Next
+          </button>
+        </div>
+        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+          <div>
+            <p class="text-sm text-gray-700">
+              Showing <span class="font-medium">${(currentPage - 1) * pagination.limit + 1}</span> 
+              to <span class="font-medium">${Math.min(currentPage * pagination.limit, pagination.total)}</span> 
+              of <span class="font-medium">${pagination.total}</span> results
+            </p>
+          </div>
+          <div>
+            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+              <button onclick="(${onPageClick})(${currentPage - 1})" 
+                      ${currentPage === 1 ? 'disabled' : ''}
+                      class="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+              
+              ${pages.map(page => {
+                if (page === '...') {
+                  return '<span class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300">...</span>';
+                }
+                
+                const isActive = page === currentPage;
+                return `
+                  <button onclick="(${onPageClick})(${page})" 
+                          class="relative inline-flex items-center px-4 py-2 text-sm font-medium ${
+                            isActive 
+                              ? 'text-white bg-blue-600 border-blue-600' 
+                              : 'text-gray-700 bg-white border-gray-300 hover:bg-gray-50'
+                          } border">
+                    ${page}
+                  </button>
+                `;
+              }).join('')}
+              
+              <button onclick="(${onPageClick})(${currentPage + 1})" 
+                      ${currentPage === totalPages ? 'disabled' : ''}
+                      class="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </nav>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Utility debounce function
+  debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
   }
 
   async loadProducts(params = new URLSearchParams()) {
@@ -3308,6 +4815,17 @@ class PCPartsShop {
   }
 
   navigateToHome() {
+    // Restore the main site header and footer when leaving admin
+    const mainNav = document.querySelector('nav');
+    if (mainNav) {
+      mainNav.style.display = '';
+    }
+
+    const mainFooter = document.querySelector('footer');
+    if (mainFooter) {
+      mainFooter.style.display = '';
+    }
+
     window.history.pushState({}, '', '/');
     this.route();
   }
