@@ -693,17 +693,11 @@ class PCPartsShop {
 
   async addToCart(productId, variantId = null, quantity = 1) {
     try {
-      console.log('Adding to cart:', { productId, variantId, quantity });
-      console.log('Current session token:', this.sessionToken);
-      console.log('Axios headers:', axios.defaults.headers.common);
-      
       const response = await axios.post('/cart/items', {
         productId,
         variantId,
         quantity
       });
-
-      console.log('Add to cart response:', response.data);
 
       if (response.data.success) {
         this.cart = response.data.data;
@@ -712,13 +706,10 @@ class PCPartsShop {
         this.updateCartUI();
         this.showNotification(this.t('Added to cart'), 'success');
       } else {
-        console.error('Add to cart failed:', response.data);
         this.showNotification(response.data.error || this.t('Failed to add to cart'), 'error');
       }
     } catch (error) {
       console.error('Error adding to cart:', error);
-      console.error('Error details:', error.response?.data);
-      console.error('Error status:', error.response?.status);
       this.showNotification(error.response?.data?.error || this.t('Failed to add to cart'), 'error');
     }
   }
@@ -852,7 +843,7 @@ class PCPartsShop {
               <i class="fas fa-shopping-cart text-4xl text-gray-400"></i>
             </div>
             <h2 class="text-xl font-semibold text-gray-900 mb-2">${this.t('Your cart is empty')}</h2>
-            <p class="text-gray-600 mb-6">${this.t('Looks like you haven\\'t added any items to your cart yet.')}</p>
+            <p class="text-gray-600 mb-6">${this.t("Looks like you haven't added any items to your cart yet.")}</p>
             <button onclick="app.navigateToHome()" class="btn-primary inline-flex items-center">
               <i class="fas fa-arrow-left mr-2"></i>
               ${this.t('Continue Shopping')}
