@@ -407,4 +407,40 @@ export class DatabaseService {
       pagination
     };
   }
+
+  async getOrderById(orderId: number): Promise<Order | null> {
+    const orderQuery = `
+      SELECT * FROM orders WHERE id = ?
+    `;
+    
+    const order = await this.db.prepare(orderQuery).bind(orderId).first<Order>();
+    if (!order) return null;
+
+    // Get order items
+    const itemsQuery = `
+      SELECT oi.*, p.name_en, p.name_jp, p.sku, pi.image_url
+      FROM order_items oi
+      JOIN products p ON oi.product_id = p.id
+      LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.is_primary = 1
+      WHERE oi.order_id = ?
+      ORDER BY oi.created_at
+    `;
+
+    const itemsResult = await this.db.prepare(itemsQuery).bind(orderId).all();
+    order.items = itemsResult.results as OrderItem[];
+
+    return order;
+  }
+
+  async clearCart(sessionToken: string): Promise<void> {
+    const query = `
+      DELETE FROM cart_items 
+      WHERE session_id = (
+        SELECT id FROM shopping_sessions 
+        WHERE session_token = ? AND expires_at > datetime('now')
+      )
+    `;
+
+    await this.db.prepare(query).bind(sessionToken).run();
+  }
 }

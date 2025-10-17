@@ -109,6 +109,13 @@ class PCPartsShop {
       this.showCartPage();
     } else if (path === '/checkout') {
       this.showCheckoutPage();
+    } else if (path === '/checkout/success') {
+      this.showOrderSuccessPage();
+    } else if (path.startsWith('/orders/')) {
+      const orderId = path.split('/')[2];
+      this.showOrderDetailsPage(orderId);
+    } else if (path === '/orders') {
+      this.showOrdersPage();
     } else if (path === '/admin') {
       this.showAdminDashboard();
     } else {
@@ -903,6 +910,365 @@ class PCPartsShop {
     `;
   }
 
+  async showCheckoutPage() {
+    // Ensure user is logged in
+    if (!this.currentUser) {
+      this.showNotification(this.t('Please sign in to proceed with checkout'), 'warning');
+      this.navigateTo('/');
+      return;
+    }
+
+    // Ensure cart is loaded and not empty
+    await this.loadCart();
+    if (!this.cart.items || this.cart.items.length === 0) {
+      this.showNotification(this.t('Your cart is empty'), 'warning');
+      this.navigateTo('/cart');
+      return;
+    }
+
+    const app = document.getElementById('app');
+    
+    app.innerHTML = `
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Breadcrumb -->
+        <nav class="mb-8">
+          <div class="flex items-center space-x-2 text-sm text-gray-600">
+            <a href="/" onclick="app.navigateToHome(); return false;" class="hover:text-primary-600">${this.t('Home')}</a>
+            <i class="fas fa-chevron-right text-xs"></i>
+            <a href="/cart" onclick="app.navigateTo('/cart'); return false;" class="hover:text-primary-600">${this.t('Cart')}</a>
+            <i class="fas fa-chevron-right text-xs"></i>
+            <span class="text-gray-900">${this.t('Checkout')}</span>
+          </div>
+        </nav>
+
+        <!-- Checkout Header -->
+        <div class="mb-8">
+          <h1 class="text-3xl font-bold text-gray-900">
+            <i class="fas fa-credit-card mr-3"></i>
+            ${this.t('Checkout')}
+          </h1>
+          <p class="text-gray-600 mt-2">${this.t('Complete your order')}</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <!-- Checkout Form -->
+          <div class="lg:col-span-2 space-y-8">
+            <!-- Contact Information -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+              <h2 class="text-lg font-semibold mb-4">${this.t('Contact Information')}</h2>
+              <div class="space-y-4">
+                <div>
+                  <label class="form-label">${this.t('Email Address')}</label>
+                  <input type="email" id="checkoutEmail" value="${this.currentUser.email}" class="form-input" required>
+                </div>
+              </div>
+            </div>
+
+            <!-- Shipping Address -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+              <h2 class="text-lg font-semibold mb-4">${this.t('Shipping Address')}</h2>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="form-label">${this.t('First Name')}</label>
+                  <input type="text" id="shippingFirstName" value="${this.currentUser.first_name || ''}" class="form-input" required>
+                </div>
+                <div>
+                  <label class="form-label">${this.t('Last Name')}</label>
+                  <input type="text" id="shippingLastName" value="${this.currentUser.last_name || ''}" class="form-input" required>
+                </div>
+                <div class="md:col-span-2">
+                  <label class="form-label">${this.t('Company')} (${this.t('Optional')})</label>
+                  <input type="text" id="shippingCompany" class="form-input">
+                </div>
+                <div class="md:col-span-2">
+                  <label class="form-label">${this.t('Address')}</label>
+                  <input type="text" id="shippingAddress1" placeholder="${this.t('Street address')}" class="form-input" required>
+                </div>
+                <div class="md:col-span-2">
+                  <input type="text" id="shippingAddress2" placeholder="${this.t('Apartment, suite, etc.')}" class="form-input">
+                </div>
+                <div>
+                  <label class="form-label">${this.t('City')}</label>
+                  <input type="text" id="shippingCity" class="form-input" required>
+                </div>
+                <div>
+                  <label class="form-label">${this.t('Postal Code')}</label>
+                  <input type="text" id="shippingZip" class="form-input" required>
+                </div>
+                <div>
+                  <label class="form-label">${this.t('Prefecture')}</label>
+                  <select id="shippingProvince" class="form-input" required>
+                    <option value="">${this.t('Select prefecture')}</option>
+                    <option value="Tokyo">Tokyo</option>
+                    <option value="Osaka">Osaka</option>
+                    <option value="Kyoto">Kyoto</option>
+                    <option value="Kanagawa">Kanagawa</option>
+                    <option value="Chiba">Chiba</option>
+                    <option value="Saitama">Saitama</option>
+                    <option value="Other">${this.t('Other')}</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label">${this.t('Country')}</label>
+                  <select id="shippingCountry" class="form-input" required>
+                    <option value="Japan">Japan</option>
+                  </select>
+                </div>
+                <div class="md:col-span-2">
+                  <label class="form-label">${this.t('Phone')} (${this.t('Optional')})</label>
+                  <input type="tel" id="shippingPhone" class="form-input">
+                </div>
+              </div>
+            </div>
+
+            <!-- Billing Address -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+              <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold">${this.t('Billing Address')}</h2>
+                <label class="flex items-center">
+                  <input type="checkbox" id="sameAsShipping" class="mr-2" checked>
+                  <span class="text-sm">${this.t('Same as shipping address')}</span>
+                </label>
+              </div>
+              <div id="billingFields" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="form-label">${this.t('First Name')}</label>
+                  <input type="text" id="billingFirstName" class="form-input">
+                </div>
+                <div>
+                  <label class="form-label">${this.t('Last Name')}</label>
+                  <input type="text" id="billingLastName" class="form-input">
+                </div>
+                <div class="md:col-span-2">
+                  <label class="form-label">${this.t('Company')} (${this.t('Optional')})</label>
+                  <input type="text" id="billingCompany" class="form-input">
+                </div>
+                <div class="md:col-span-2">
+                  <label class="form-label">${this.t('Address')}</label>
+                  <input type="text" id="billingAddress1" class="form-input">
+                </div>
+                <div class="md:col-span-2">
+                  <input type="text" id="billingAddress2" placeholder="${this.t('Apartment, suite, etc.')}" class="form-input">
+                </div>
+                <div>
+                  <label class="form-label">${this.t('City')}</label>
+                  <input type="text" id="billingCity" class="form-input">
+                </div>
+                <div>
+                  <label class="form-label">${this.t('Postal Code')}</label>
+                  <input type="text" id="billingZip" class="form-input">
+                </div>
+                <div>
+                  <label class="form-label">${this.t('Prefecture')}</label>
+                  <select id="billingProvince" class="form-input">
+                    <option value="">${this.t('Select prefecture')}</option>
+                    <option value="Tokyo">Tokyo</option>
+                    <option value="Osaka">Osaka</option>
+                    <option value="Kyoto">Kyoto</option>
+                    <option value="Kanagawa">Kanagawa</option>
+                    <option value="Chiba">Chiba</option>
+                    <option value="Saitama">Saitama</option>
+                    <option value="Other">${this.t('Other')}</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label">${this.t('Country')}</label>
+                  <select id="billingCountry" class="form-input">
+                    <option value="Japan">Japan</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment Method -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+              <h2 class="text-lg font-semibold mb-4">${this.t('Payment Method')}</h2>
+              <div class="space-y-4">
+                <!-- Credit Card Option -->
+                <label class="payment-option">
+                  <input type="radio" name="paymentMethod" value="credit_card" class="mr-3" checked>
+                  <div class="flex-1">
+                    <div class="flex items-center">
+                      <i class="fas fa-credit-card mr-2 text-primary-600"></i>
+                      <span class="font-medium">${this.t('Credit Card')}</span>
+                      <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded ml-2">${this.t('DEMO')}</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-1">${this.t('Secure payment with your credit card')}</p>
+                  </div>
+                </label>
+
+                <!-- Credit Card Form -->
+                <div id="creditCardForm" class="ml-6 space-y-4">
+                  <div>
+                    <label class="form-label">${this.t('Card Number')}</label>
+                    <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" class="form-input" maxlength="19">
+                  </div>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="form-label">${this.t('Expiry Date')}</label>
+                      <input type="text" id="expiryDate" placeholder="MM/YY" class="form-input" maxlength="5">
+                    </div>
+                    <div>
+                      <label class="form-label">${this.t('CVV')}</label>
+                      <input type="text" id="cvv" placeholder="123" class="form-input" maxlength="4">
+                    </div>
+                  </div>
+                  <div>
+                    <label class="form-label">${this.t('Cardholder Name')}</label>
+                    <input type="text" id="cardholderName" value="${this.currentUser.first_name || ''} ${this.currentUser.last_name || ''}" class="form-input">
+                  </div>
+                </div>
+
+                <!-- Cash on Delivery Option -->
+                <label class="payment-option">
+                  <input type="radio" name="paymentMethod" value="cod" class="mr-3">
+                  <div class="flex-1">
+                    <div class="flex items-center">
+                      <i class="fas fa-money-bill-wave mr-2 text-green-600"></i>
+                      <span class="font-medium">${this.t('Cash on Delivery')}</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-1">${this.t('Pay when you receive your order')}</p>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Order Notes -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+              <h2 class="text-lg font-semibold mb-4">${this.t('Order Notes')} (${this.t('Optional')})</h2>
+              <textarea id="orderNotes" rows="3" class="form-input" placeholder="${this.t('Special instructions for your order...')}"></textarea>
+            </div>
+          </div>
+
+          <!-- Order Summary -->
+          <div class="lg:col-span-1">
+            <div class="bg-white rounded-lg shadow-sm sticky top-4">
+              <div class="p-6 border-b">
+                <h2 class="text-lg font-semibold">${this.t('Order Summary')}</h2>
+              </div>
+              <div class="p-6">
+                <div class="space-y-4 mb-6">
+                  ${this.cart.items.map(item => this.renderCheckoutItem(item)).join('')}
+                </div>
+
+                <div class="space-y-3 py-4 border-t">
+                  <div class="flex justify-between text-sm">
+                    <span>${this.t('Subtotal')}:</span>
+                    <span>${this.config.currency}${this.cart.subtotal.toLocaleString()}</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span>${this.t('Tax')}:</span>
+                    <span>${this.config.currency}${this.cart.tax.toLocaleString()}</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span>${this.t('Shipping')}:</span>
+                    <span>${this.cart.shipping === 0 ? this.t('Free') : this.config.currency + this.cart.shipping.toLocaleString()}</span>
+                  </div>
+                  <div class="flex justify-between text-lg font-semibold pt-3 border-t">
+                    <span>${this.t('Total')}:</span>
+                    <span>${this.config.currency}${this.cart.total.toLocaleString()}</span>
+                  </div>
+                </div>
+
+                <button onclick="app.processOrder()" class="btn-primary w-full mt-6" id="placeOrderBtn">
+                  <i class="fas fa-lock mr-2"></i>
+                  ${this.t('Place Order')}
+                </button>
+
+                <div class="mt-4 text-center">
+                  <p class="text-xs text-gray-500">${this.t('Your payment information is secure and encrypted')}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Set up checkout functionality
+    this.setupCheckoutForm();
+  }
+
+  renderCheckoutItem(item) {
+    const name = this.config.lang === 'jp' ? item.name_jp : item.name_en;
+    
+    return `
+      <div class="flex items-center space-x-3">
+        <div class="relative">
+          <img src="${item.image_url || '/static/placeholder-product.jpg'}" 
+               alt="${name}" 
+               class="w-12 h-12 object-cover rounded-md">
+          <span class="absolute -top-2 -right-2 bg-gray-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+            ${item.quantity}
+          </span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-gray-900 truncate">${name}</p>
+          <p class="text-xs text-gray-600">${this.config.currency}${item.price.toLocaleString()} each</p>
+        </div>
+        <div class="text-sm font-medium text-gray-900">
+          ${this.config.currency}${(item.price * item.quantity).toLocaleString()}
+        </div>
+      </div>
+    `;
+  }
+
+  setupCheckoutForm() {
+    // Same as shipping checkbox
+    const sameAsShipping = document.getElementById('sameAsShipping');
+    const billingFields = document.getElementById('billingFields');
+    
+    if (sameAsShipping && billingFields) {
+      sameAsShipping.addEventListener('change', () => {
+        if (sameAsShipping.checked) {
+          billingFields.classList.add('hidden');
+        } else {
+          billingFields.classList.remove('hidden');
+        }
+      });
+    }
+
+    // Payment method toggle
+    const paymentRadios = document.querySelectorAll('input[name="paymentMethod"]');
+    const creditCardForm = document.getElementById('creditCardForm');
+    
+    paymentRadios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        if (radio.value === 'credit_card') {
+          creditCardForm.classList.remove('hidden');
+        } else {
+          creditCardForm.classList.add('hidden');
+        }
+      });
+    });
+
+    // Credit card formatting
+    this.setupCreditCardFormatting();
+  }
+
+  setupCreditCardFormatting() {
+    const cardNumber = document.getElementById('cardNumber');
+    const expiryDate = document.getElementById('expiryDate');
+
+    if (cardNumber) {
+      cardNumber.addEventListener('input', (e) => {
+        let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
+        let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+        e.target.value = formattedValue;
+      });
+    }
+
+    if (expiryDate) {
+      expiryDate.addEventListener('input', (e) => {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length >= 2) {
+          value = value.substring(0, 2) + '/' + value.substring(2, 4);
+        }
+        e.target.value = value;
+      });
+    }
+  }
+
   renderCartPageItem(item) {
     const name = this.config.lang === 'jp' ? item.name_jp : item.name_en;
     
@@ -1139,7 +1505,90 @@ class PCPartsShop {
         'Registration failed': 'Registration failed',
         'Google login successful!': 'Google login successful!',
         'Google login failed': 'Google login failed',
-        'Google authentication failed': 'Google authentication failed'
+        'Google authentication failed': 'Google authentication failed',
+        // Checkout & Orders
+        'Checkout': 'Checkout',
+        'Complete your order': 'Complete your order',
+        'Contact Information': 'Contact Information',
+        'Email Address': 'Email Address',
+        'Shipping Address': 'Shipping Address',
+        'Company': 'Company',
+        'Optional': 'Optional',
+        'Address': 'Address',
+        'Street address': 'Street address',
+        'Apartment, suite, etc.': 'Apartment, suite, etc.',
+        'City': 'City',
+        'Postal Code': 'Postal Code',
+        'Prefecture': 'Prefecture',
+        'Select prefecture': 'Select prefecture',
+        'Other': 'Other',
+        'Country': 'Country',
+        'Phone': 'Phone',
+        'Billing Address': 'Billing Address',
+        'Same as shipping address': 'Same as shipping address',
+        'Payment Method': 'Payment Method',
+        'Credit Card': 'Credit Card',
+        'DEMO': 'DEMO',
+        'Secure payment with your credit card': 'Secure payment with your credit card',
+        'Card Number': 'Card Number',
+        'Expiry Date': 'Expiry Date',
+        'CVV': 'CVV',
+        'Cardholder Name': 'Cardholder Name',
+        'Cash on Delivery': 'Cash on Delivery',
+        'Pay when you receive your order': 'Pay when you receive your order',
+        'Order Notes': 'Order Notes',
+        'Special instructions for your order...': 'Special instructions for your order...',
+        'Place Order': 'Place Order',
+        'Your payment information is secure and encrypted': 'Your payment information is secure and encrypted',
+        'Please sign in to proceed with checkout': 'Please sign in to proceed with checkout',
+        'Processing...': 'Processing...',
+        'Please fill in all required fields': 'Please fill in all required fields',
+        'Please fill in all credit card details': 'Please fill in all credit card details',
+        'Order placed successfully!': 'Order placed successfully!',
+        'Failed to place order': 'Failed to place order',
+        'Order Confirmed!': 'Order Confirmed!',
+        'Thank you for your purchase. Your order has been received and is being processed.': 'Thank you for your purchase. Your order has been received and is being processed.',
+        'Order': 'Order',
+        'Placed on': 'Placed on',
+        'Total Amount': 'Total Amount',
+        'Order Status': 'Order Status',
+        'Order Confirmed': 'Order Confirmed',
+        'Processing': 'Processing',
+        'Shipped': 'Shipped',
+        'Delivered': 'Delivered',
+        'What happens next?': 'What happens next?',
+        'You will receive an order confirmation email shortly': 'You will receive an order confirmation email shortly',
+        'Your order will be processed within 24 hours': 'Your order will be processed within 24 hours',
+        'You can track your order status in your account': 'You can track your order status in your account',
+        'Estimated delivery: 2-5 business days': 'Estimated delivery: 2-5 business days',
+        'View Order Details': 'View Order Details',
+        'Please sign in to view your orders': 'Please sign in to view your orders',
+        'Track and manage your orders': 'Track and manage your orders',
+        'No orders yet': 'No orders yet',
+        'When you place your first order, it will appear here.': 'When you place your first order, it will appear here.',
+        'Start Shopping': 'Start Shopping',
+        'Payment Status': 'Payment Status',
+        'Delivering to': 'Delivering to',
+        'View Details': 'View Details',
+        'Track Order': 'Track Order',
+        'Please sign in to view order details': 'Please sign in to view order details',
+        'Order Placed': 'Order Placed',
+        'Track Package': 'Track Package',
+        'Simulate Progress': 'Simulate Progress',
+        'Order Items': 'Order Items',
+        'Quantity': 'Quantity',
+        'each': 'each',
+        'total': 'total',
+        'Order status updated to': 'Order status updated to',
+        'Order is already at final status': 'Order is already at final status',
+        'Failed to update order status': 'Failed to update order status',
+        'Tracking order': 'Tracking order',
+        'Feature coming soon!': 'Feature coming soon!',
+        'Confirmed': 'Confirmed',
+        'Pending': 'Pending',
+        'Cancelled': 'Cancelled',
+        'cod pending': 'COD Pending',
+        'completed': 'Completed'
       },
       jp: {
         // Navigation
@@ -1240,7 +1689,90 @@ class PCPartsShop {
         'Registration failed': '登録に失敗しました',
         'Google login successful!': 'Googleログイン成功！',
         'Google login failed': 'Googleログインに失敗しました',
-        'Google authentication failed': 'Google認証に失敗しました'
+        'Google authentication failed': 'Google認証に失敗しました',
+        // Checkout & Orders
+        'Checkout': 'チェックアウト',
+        'Complete your order': 'ご注文を完了してください',
+        'Contact Information': '連絡先情報',
+        'Email Address': 'メールアドレス',
+        'Shipping Address': '配送先住所',
+        'Company': '会社名',
+        'Optional': '任意',
+        'Address': '住所',
+        'Street address': '番地・建物名',
+        'Apartment, suite, etc.': 'マンション・アパート名など',
+        'City': '市区町村',
+        'Postal Code': '郵便番号',
+        'Prefecture': '都道府県',
+        'Select prefecture': '都道府県を選択',
+        'Other': 'その他',
+        'Country': '国',
+        'Phone': '電話番号',
+        'Billing Address': '請求先住所',
+        'Same as shipping address': '配送先住所と同じ',
+        'Payment Method': '支払い方法',
+        'Credit Card': 'クレジットカード',
+        'DEMO': 'デモ',
+        'Secure payment with your credit card': 'クレジットカードで安全にお支払い',
+        'Card Number': 'カード番号',
+        'Expiry Date': '有効期限',
+        'CVV': 'セキュリティコード',
+        'Cardholder Name': 'カード名義人',
+        'Cash on Delivery': '代金引換',
+        'Pay when you receive your order': '商品受け取り時にお支払い',
+        'Order Notes': 'ご注文に関するメモ',
+        'Special instructions for your order...': 'ご注文に関する特別な指示...',
+        'Place Order': '注文を確定する',
+        'Your payment information is secure and encrypted': 'お支払い情報は安全に暗号化されています',
+        'Please sign in to proceed with checkout': 'チェックアウトを続行するにはサインインしてください',
+        'Processing...': '処理中...',
+        'Please fill in all required fields': '必須項目をすべて入力してください',
+        'Please fill in all credit card details': 'クレジットカード情報をすべて入力してください',
+        'Order placed successfully!': 'ご注文が正常に完了しました！',
+        'Failed to place order': '注文の処理に失敗しました',
+        'Order Confirmed!': '注文が確認されました！',
+        'Thank you for your purchase. Your order has been received and is being processed.': 'ご購入ありがとうございます。ご注文を受け付け、処理を開始いたします。',
+        'Order': '注文',
+        'Placed on': '注文日',
+        'Total Amount': '合計金額',
+        'Order Status': '注文ステータス',
+        'Order Confirmed': '注文確認済み',
+        'Processing': '処理中',
+        'Shipped': '発送済み',
+        'Delivered': '配送完了',
+        'What happens next?': '次に何が起こりますか？',
+        'You will receive an order confirmation email shortly': 'まもなく注文確認メールをお送りします',
+        'Your order will be processed within 24 hours': 'ご注文は24時間以内に処理されます',
+        'You can track your order status in your account': 'アカウントで注文状況を追跡できます',
+        'Estimated delivery: 2-5 business days': '配送予定：営業日2-5日',
+        'View Order Details': '注文詳細を見る',
+        'Please sign in to view your orders': 'ご注文を表示するにはサインインしてください',
+        'Track and manage your orders': '注文の追跡と管理',
+        'No orders yet': 'まだ注文がありません',
+        'When you place your first order, it will appear here.': '最初のご注文をいただくと、こちらに表示されます。',
+        'Start Shopping': 'ショッピングを開始',
+        'Payment Status': '支払い状況',
+        'Delivering to': '配送先',
+        'View Details': '詳細を見る',
+        'Track Order': '注文を追跡',
+        'Please sign in to view order details': '注文詳細を表示するにはサインインしてください',
+        'Order Placed': '注文受付',
+        'Track Package': '荷物を追跡',
+        'Simulate Progress': '進行状況をシミュレート',
+        'Order Items': '注文商品',
+        'Quantity': '数量',
+        'each': '各',
+        'total': '合計',
+        'Order status updated to': '注文ステータスが更新されました：',
+        'Order is already at final status': '注文は既に最終ステータスです',
+        'Failed to update order status': '注文ステータスの更新に失敗しました',
+        'Tracking order': '注文追跡',
+        'Feature coming soon!': '機能は近日公開予定！',
+        'Confirmed': '確認済み',
+        'Pending': '保留中',
+        'Cancelled': 'キャンセル済み',
+        'cod pending': '代引き待ち',
+        'completed': '完了'
       }
     };
   }
@@ -1750,6 +2282,609 @@ class PCPartsShop {
       console.error('Google login error:', error);
       this.showNotification(this.t('Google authentication failed'), 'error');
     }
+  }
+
+  // Order processing
+  async processOrder() {
+    try {
+      const placeOrderBtn = document.getElementById('placeOrderBtn');
+      if (placeOrderBtn) {
+        placeOrderBtn.disabled = true;
+        placeOrderBtn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i>${this.t('Processing...')}`;
+      }
+
+      // Get form data
+      const orderData = this.collectOrderData();
+      
+      if (!this.validateOrderData(orderData)) {
+        return;
+      }
+
+      // Process the order
+      const response = await axios.post('/orders', orderData);
+
+      if (response.data.success) {
+        // Store order for success page
+        localStorage.setItem('lastOrder', JSON.stringify(response.data.data));
+        
+        // Navigate to success page
+        this.navigateTo('/checkout/success');
+        
+        this.showNotification(this.t('Order placed successfully!'), 'success');
+      } else {
+        this.showNotification(response.data.error || this.t('Failed to place order'), 'error');
+      }
+    } catch (error) {
+      console.error('Order processing error:', error);
+      this.showNotification(error.response?.data?.error || this.t('Failed to place order'), 'error');
+    } finally {
+      const placeOrderBtn = document.getElementById('placeOrderBtn');
+      if (placeOrderBtn) {
+        placeOrderBtn.disabled = false;
+        placeOrderBtn.innerHTML = `<i class="fas fa-lock mr-2"></i>${this.t('Place Order')}`;
+      }
+    }
+  }
+
+  collectOrderData() {
+    const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value;
+    const sameAsShipping = document.getElementById('sameAsShipping')?.checked;
+
+    return {
+      sessionToken: this.sessionToken,
+      email: document.getElementById('checkoutEmail')?.value,
+      shipping: {
+        firstName: document.getElementById('shippingFirstName')?.value,
+        lastName: document.getElementById('shippingLastName')?.value,
+        company: document.getElementById('shippingCompany')?.value,
+        address1: document.getElementById('shippingAddress1')?.value,
+        address2: document.getElementById('shippingAddress2')?.value,
+        city: document.getElementById('shippingCity')?.value,
+        province: document.getElementById('shippingProvince')?.value,
+        country: document.getElementById('shippingCountry')?.value,
+        zip: document.getElementById('shippingZip')?.value,
+        phone: document.getElementById('shippingPhone')?.value
+      },
+      billing: sameAsShipping ? null : {
+        firstName: document.getElementById('billingFirstName')?.value,
+        lastName: document.getElementById('billingLastName')?.value,
+        company: document.getElementById('billingCompany')?.value,
+        address1: document.getElementById('billingAddress1')?.value,
+        address2: document.getElementById('billingAddress2')?.value,
+        city: document.getElementById('billingCity')?.value,
+        province: document.getElementById('billingProvince')?.value,
+        country: document.getElementById('billingCountry')?.value,
+        zip: document.getElementById('billingZip')?.value,
+        phone: document.getElementById('billingPhone')?.value
+      },
+      paymentMethod,
+      notes: document.getElementById('orderNotes')?.value
+    };
+  }
+
+  validateOrderData(data) {
+    if (!data.email || !data.shipping.firstName || !data.shipping.lastName || 
+        !data.shipping.address1 || !data.shipping.city || !data.shipping.zip || 
+        !data.shipping.province || !data.paymentMethod) {
+      this.showNotification(this.t('Please fill in all required fields'), 'error');
+      return false;
+    }
+
+    // Validate credit card if selected
+    if (data.paymentMethod === 'credit_card') {
+      const cardNumber = document.getElementById('cardNumber')?.value;
+      const expiryDate = document.getElementById('expiryDate')?.value;
+      const cvv = document.getElementById('cvv')?.value;
+      const cardholderName = document.getElementById('cardholderName')?.value;
+
+      if (!cardNumber || !expiryDate || !cvv || !cardholderName) {
+        this.showNotification(this.t('Please fill in all credit card details'), 'error');
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  showOrderSuccessPage() {
+    const lastOrder = localStorage.getItem('lastOrder');
+    let order = null;
+    
+    try {
+      order = lastOrder ? JSON.parse(lastOrder) : null;
+    } catch (e) {
+      console.error('Error parsing last order:', e);
+    }
+
+    const app = document.getElementById('app');
+    
+    app.innerHTML = `
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Success Message -->
+        <div class="text-center mb-8">
+          <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-check text-3xl text-green-600"></i>
+          </div>
+          <h1 class="text-3xl font-bold text-gray-900 mb-2">${this.t('Order Confirmed!')}</h1>
+          <p class="text-gray-600">${this.t('Thank you for your purchase. Your order has been received and is being processed.')}</p>
+        </div>
+
+        ${order ? `
+        <!-- Order Details -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+          <div class="border-b pb-4 mb-4">
+            <div class="flex justify-between items-center">
+              <div>
+                <h2 class="text-lg font-semibold">${this.t('Order')} #${order.order_number}</h2>
+                <p class="text-sm text-gray-600">${this.t('Placed on')} ${new Date(order.created_at).toLocaleDateString()}</p>
+              </div>
+              <div class="text-right">
+                <p class="text-2xl font-bold text-primary-600">${this.config.currency}${order.total_amount.toLocaleString()}</p>
+                <p class="text-sm text-gray-600">${this.t('Total Amount')}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h3 class="font-medium text-gray-900 mb-2">${this.t('Shipping Address')}</h3>
+              <div class="text-sm text-gray-600">
+                <p>${order.shipping_first_name} ${order.shipping_last_name}</p>
+                ${order.shipping_company ? `<p>${order.shipping_company}</p>` : ''}
+                <p>${order.shipping_address1}</p>
+                ${order.shipping_address2 ? `<p>${order.shipping_address2}</p>` : ''}
+                <p>${order.shipping_city}, ${order.shipping_province} ${order.shipping_zip}</p>
+                <p>${order.shipping_country}</p>
+              </div>
+            </div>
+            
+            <div>
+              <h3 class="font-medium text-gray-900 mb-2">${this.t('Order Status')}</h3>
+              <div class="space-y-2">
+                <div class="flex items-center">
+                  <i class="fas fa-circle text-green-500 text-xs mr-2"></i>
+                  <span class="text-sm">${this.t('Order Confirmed')}</span>
+                </div>
+                <div class="flex items-center text-gray-400">
+                  <i class="far fa-circle text-xs mr-2"></i>
+                  <span class="text-sm">${this.t('Processing')}</span>
+                </div>
+                <div class="flex items-center text-gray-400">
+                  <i class="far fa-circle text-xs mr-2"></i>
+                  <span class="text-sm">${this.t('Shipped')}</span>
+                </div>
+                <div class="flex items-center text-gray-400">
+                  <i class="far fa-circle text-xs mr-2"></i>
+                  <span class="text-sm">${this.t('Delivered')}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        ` : ''}
+
+        <!-- Next Steps -->
+        <div class="bg-blue-50 rounded-lg p-6 mb-8">
+          <h3 class="font-medium text-blue-900 mb-2">${this.t('What happens next?')}</h3>
+          <ul class="text-sm text-blue-800 space-y-1">
+            <li>• ${this.t('You will receive an order confirmation email shortly')}</li>
+            <li>• ${this.t('Your order will be processed within 24 hours')}</li>
+            <li>• ${this.t('You can track your order status in your account')}</li>
+            <li>• ${this.t('Estimated delivery: 2-5 business days')}</li>
+          </ul>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <button onclick="app.navigateToHome()" class="btn-secondary">
+            <i class="fas fa-home mr-2"></i>
+            ${this.t('Continue Shopping')}
+          </button>
+          ${order ? `
+          <button onclick="app.navigateTo('/orders/${order.id}')" class="btn-primary">
+            <i class="fas fa-eye mr-2"></i>
+            ${this.t('View Order Details')}
+          </button>
+          ` : ''}
+          <button onclick="app.navigateTo('/orders')" class="btn-secondary">
+            <i class="fas fa-list mr-2"></i>
+            ${this.t('My Orders')}
+          </button>
+        </div>
+      </div>
+    `;
+
+    // Clean up stored order
+    localStorage.removeItem('lastOrder');
+  }
+
+  async showOrdersPage() {
+    if (!this.currentUser) {
+      this.showNotification(this.t('Please sign in to view your orders'), 'warning');
+      this.navigateTo('/');
+      return;
+    }
+
+    const app = document.getElementById('app');
+    
+    app.innerHTML = `
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Breadcrumb -->
+        <nav class="mb-8">
+          <div class="flex items-center space-x-2 text-sm text-gray-600">
+            <a href="/" onclick="app.navigateToHome(); return false;" class="hover:text-primary-600">${this.t('Home')}</a>
+            <i class="fas fa-chevron-right text-xs"></i>
+            <span class="text-gray-900">${this.t('My Orders')}</span>
+          </div>
+        </nav>
+
+        <!-- Page Header -->
+        <div class="mb-8">
+          <h1 class="text-3xl font-bold text-gray-900">
+            <i class="fas fa-box mr-3"></i>
+            ${this.t('My Orders')}
+          </h1>
+          <p class="text-gray-600 mt-2">${this.t('Track and manage your orders')}</p>
+        </div>
+
+        <!-- Orders List -->
+        <div id="ordersList">
+          ${this.renderLoadingSkeleton(3, 'order')}
+        </div>
+      </div>
+    `;
+
+    // Load orders
+    await this.loadOrders();
+  }
+
+  async loadOrders() {
+    try {
+      const response = await axios.get('/orders');
+      if (response.data.success) {
+        const orders = response.data.data;
+        this.renderOrders(orders);
+      }
+    } catch (error) {
+      console.error('Error loading orders:', error);
+      this.showError('Failed to load orders');
+    }
+  }
+
+  renderOrders(orders) {
+    const ordersList = document.getElementById('ordersList');
+    
+    if (orders.length === 0) {
+      ordersList.innerHTML = `
+        <div class="text-center py-16">
+          <div class="bg-gray-100 rounded-full w-32 h-32 flex items-center justify-center mx-auto mb-6">
+            <i class="fas fa-box text-4xl text-gray-400"></i>
+          </div>
+          <h2 class="text-xl font-semibold text-gray-900 mb-2">${this.t('No orders yet')}</h2>
+          <p class="text-gray-600 mb-6">${this.t('When you place your first order, it will appear here.')}</p>
+          <button onclick="app.navigateToHome()" class="btn-primary">
+            <i class="fas fa-shopping-cart mr-2"></i>
+            ${this.t('Start Shopping')}
+          </button>
+        </div>
+      `;
+      return;
+    }
+
+    ordersList.innerHTML = `
+      <div class="space-y-6">
+        ${orders.map(order => this.renderOrderCard(order)).join('')}
+      </div>
+    `;
+  }
+
+  renderOrderCard(order) {
+    const statusColors = {
+      pending: 'bg-yellow-100 text-yellow-800',
+      confirmed: 'bg-blue-100 text-blue-800',
+      processing: 'bg-indigo-100 text-indigo-800',
+      shipped: 'bg-purple-100 text-purple-800',
+      delivered: 'bg-green-100 text-green-800',
+      cancelled: 'bg-red-100 text-red-800'
+    };
+
+    const statusColor = statusColors[order.status] || 'bg-gray-100 text-gray-800';
+
+    return `
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="p-6">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <h3 class="text-lg font-medium text-gray-900">
+                ${this.t('Order')} #${order.order_number}
+              </h3>
+              <p class="text-sm text-gray-600">
+                ${this.t('Placed on')} ${new Date(order.created_at).toLocaleDateString()}
+              </p>
+            </div>
+            <div class="text-right">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColor}">
+                ${this.t(order.status.charAt(0).toUpperCase() + order.status.slice(1))}
+              </span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div>
+              <p class="text-sm font-medium text-gray-900">${this.t('Total Amount')}</p>
+              <p class="text-lg font-semibold text-primary-600">
+                ${this.config.currency}${order.total_amount.toLocaleString()}
+              </p>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-900">${this.t('Payment Status')}</p>
+              <p class="text-sm text-gray-600">${this.t(order.payment_status.replace('_', ' '))}</p>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-900">${this.t('Items')}</p>
+              <p class="text-sm text-gray-600">${order.item_count} ${this.t('items')}</p>
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center pt-4 border-t border-gray-200">
+            <p class="text-sm text-gray-600">
+              ${this.t('Delivering to')}: ${order.shipping_city}, ${order.shipping_province}
+            </p>
+            <div class="space-x-3">
+              <button onclick="app.navigateTo('/orders/${order.id}')" class="btn-secondary btn-sm">
+                <i class="fas fa-eye mr-1"></i>
+                ${this.t('View Details')}
+              </button>
+              ${order.status === 'shipped' || order.status === 'delivered' ? `
+                <button onclick="app.trackOrder('${order.order_number}')" class="btn-primary btn-sm">
+                  <i class="fas fa-truck mr-1"></i>
+                  ${this.t('Track Order')}
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  async showOrderDetailsPage(orderId) {
+    if (!this.currentUser) {
+      this.showNotification(this.t('Please sign in to view order details'), 'warning');
+      this.navigateTo('/');
+      return;
+    }
+
+    const app = document.getElementById('app');
+    
+    app.innerHTML = `
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div id="orderDetails">
+          ${this.renderLoadingSkeleton(1, 'order-detail')}
+        </div>
+      </div>
+    `;
+
+    try {
+      const response = await axios.get(`/orders/${orderId}`);
+      if (response.data.success) {
+        this.renderOrderDetails(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error loading order details:', error);
+      this.showError('Failed to load order details');
+    }
+  }
+
+  renderOrderDetails(order) {
+    const orderDetails = document.getElementById('orderDetails');
+    
+    orderDetails.innerHTML = `
+      <!-- Breadcrumb -->
+      <nav class="mb-8">
+        <div class="flex items-center space-x-2 text-sm text-gray-600">
+          <a href="/" onclick="app.navigateToHome(); return false;" class="hover:text-primary-600">${this.t('Home')}</a>
+          <i class="fas fa-chevron-right text-xs"></i>
+          <a href="/orders" onclick="app.navigateTo('/orders'); return false;" class="hover:text-primary-600">${this.t('My Orders')}</a>
+          <i class="fas fa-chevron-right text-xs"></i>
+          <span class="text-gray-900">${this.t('Order')} #${order.order_number}</span>
+        </div>
+      </nav>
+
+      <!-- Order Header -->
+      <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+        <div class="flex justify-between items-start mb-6">
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900">${this.t('Order')} #${order.order_number}</h1>
+            <p class="text-gray-600">${this.t('Placed on')} ${new Date(order.created_at).toLocaleDateString()}</p>
+          </div>
+          <div class="text-right">
+            <p class="text-2xl font-bold text-primary-600">${this.config.currency}${order.total_amount.toLocaleString()}</p>
+            <p class="text-sm text-gray-600">${this.t('Total Amount')}</p>
+          </div>
+        </div>
+
+        <!-- Order Status Timeline -->
+        <div class="mb-6">
+          <h3 class="font-medium text-gray-900 mb-4">${this.t('Order Status')}</h3>
+          ${this.renderOrderTimeline(order)}
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="flex space-x-4">
+          ${order.status === 'shipped' || order.status === 'delivered' ? `
+            <button onclick="app.trackOrder('${order.order_number}')" class="btn-primary">
+              <i class="fas fa-truck mr-2"></i>
+              ${this.t('Track Package')}
+            </button>
+          ` : ''}
+          <button onclick="app.simulateOrderProgress('${order.id}')" class="btn-secondary">
+            <i class="fas fa-forward mr-2"></i>
+            ${this.t('Simulate Progress')} (${this.t('Demo')})
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Order Items -->
+        <div class="lg:col-span-2">
+          <div class="bg-white rounded-lg shadow-sm p-6">
+            <h2 class="text-lg font-semibold mb-4">${this.t('Order Items')}</h2>
+            <div class="space-y-4">
+              ${order.items?.map(item => this.renderOrderItem(item)).join('') || '<p class="text-gray-500">No items found</p>'}
+            </div>
+          </div>
+        </div>
+
+        <!-- Order Summary & Addresses -->
+        <div class="lg:col-span-1 space-y-6">
+          <!-- Order Summary -->
+          <div class="bg-white rounded-lg shadow-sm p-6">
+            <h3 class="font-semibold mb-4">${this.t('Order Summary')}</h3>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span>${this.t('Subtotal')}:</span>
+                <span>${this.config.currency}${order.subtotal.toLocaleString()}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>${this.t('Tax')}:</span>
+                <span>${this.config.currency}${order.tax_amount.toLocaleString()}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>${this.t('Shipping')}:</span>
+                <span>${order.shipping_amount === 0 ? this.t('Free') : this.config.currency + order.shipping_amount.toLocaleString()}</span>
+              </div>
+              <div class="flex justify-between font-semibold text-base pt-2 border-t">
+                <span>${this.t('Total')}:</span>
+                <span>${this.config.currency}${order.total_amount.toLocaleString()}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Shipping Address -->
+          <div class="bg-white rounded-lg shadow-sm p-6">
+            <h3 class="font-semibold mb-4">${this.t('Shipping Address')}</h3>
+            <div class="text-sm text-gray-600">
+              <p class="font-medium text-gray-900">${order.shipping_first_name} ${order.shipping_last_name}</p>
+              ${order.shipping_company ? `<p>${order.shipping_company}</p>` : ''}
+              <p>${order.shipping_address1}</p>
+              ${order.shipping_address2 ? `<p>${order.shipping_address2}</p>` : ''}
+              <p>${order.shipping_city}, ${order.shipping_province} ${order.shipping_zip}</p>
+              <p>${order.shipping_country}</p>
+              ${order.shipping_phone ? `<p>${this.t('Phone')}: ${order.shipping_phone}</p>` : ''}
+            </div>
+          </div>
+
+          <!-- Payment Information -->
+          <div class="bg-white rounded-lg shadow-sm p-6">
+            <h3 class="font-semibold mb-4">${this.t('Payment Information')}</h3>
+            <div class="text-sm">
+              <p><span class="font-medium">${this.t('Status')}:</span> ${this.t(order.payment_status.replace('_', ' '))}</p>
+              <p><span class="font-medium">${this.t('Method')}:</span> ${order.payment_status.includes('cod') ? this.t('Cash on Delivery') : this.t('Credit Card')}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  renderOrderTimeline(order) {
+    const statuses = [
+      { key: 'pending', label: 'Order Placed', icon: 'fas fa-check-circle' },
+      { key: 'confirmed', label: 'Order Confirmed', icon: 'fas fa-thumbs-up' },
+      { key: 'processing', label: 'Processing', icon: 'fas fa-cog' },
+      { key: 'shipped', label: 'Shipped', icon: 'fas fa-truck' },
+      { key: 'delivered', label: 'Delivered', icon: 'fas fa-home' }
+    ];
+
+    const currentStatusIndex = statuses.findIndex(s => s.key === order.status);
+
+    return `
+      <div class="flex items-center justify-between">
+        ${statuses.map((status, index) => {
+          const isActive = index <= currentStatusIndex;
+          const isCurrent = index === currentStatusIndex;
+          
+          return `
+            <div class="flex flex-col items-center">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center ${
+                isActive ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-400'
+              } ${isCurrent ? 'ring-4 ring-primary-200' : ''}">
+                <i class="${status.icon} text-sm"></i>
+              </div>
+              <p class="text-xs mt-2 text-center max-w-20 ${
+                isActive ? 'text-primary-600 font-medium' : 'text-gray-500'
+              }">
+                ${this.t(status.label)}
+              </p>
+            </div>
+            ${index < statuses.length - 1 ? `
+              <div class="flex-1 h-0.5 mx-2 ${
+                index < currentStatusIndex ? 'bg-primary-600' : 'bg-gray-200'
+              }"></div>
+            ` : ''}
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  renderOrderItem(item) {
+    return `
+      <div class="flex items-center space-x-4 py-4 border-b border-gray-200 last:border-0">
+        <img src="${item.image_url || '/static/placeholder-product.jpg'}" 
+             alt="${item.name_en}" 
+             class="w-16 h-16 object-cover rounded-md">
+        
+        <div class="flex-1">
+          <h4 class="font-medium text-gray-900">${item.name_en}</h4>
+          <p class="text-sm text-gray-600">SKU: ${item.sku}</p>
+          <p class="text-sm text-gray-600">${this.t('Quantity')}: ${item.quantity}</p>
+        </div>
+        
+        <div class="text-right">
+          <p class="font-medium text-gray-900">${this.config.currency}${item.price.toLocaleString()}</p>
+          <p class="text-sm text-gray-600">${this.t('each')}</p>
+        </div>
+        
+        <div class="text-right">
+          <p class="font-semibold text-gray-900">${this.config.currency}${item.total.toLocaleString()}</p>
+          <p class="text-sm text-gray-600">${this.t('total')}</p>
+        </div>
+      </div>
+    `;
+  }
+
+  async simulateOrderProgress(orderId) {
+    try {
+      const statuses = ['confirmed', 'processing', 'shipped', 'delivered'];
+      const currentOrder = await axios.get(`/orders/${orderId}`);
+      const currentStatus = currentOrder.data.data.status;
+      const currentIndex = statuses.indexOf(currentStatus);
+      
+      if (currentIndex < statuses.length - 1) {
+        const nextStatus = statuses[currentIndex + 1];
+        const response = await axios.put(`/orders/${orderId}/status`, {
+          status: nextStatus,
+          shippingStatus: nextStatus === 'shipped' ? 'in_transit' : nextStatus === 'delivered' ? 'delivered' : 'pending'
+        });
+
+        if (response.data.success) {
+          this.showNotification(`${this.t('Order status updated to')} ${this.t(nextStatus)}!`, 'success');
+          // Refresh the page
+          this.renderOrderDetails(response.data.data);
+        }
+      } else {
+        this.showNotification(this.t('Order is already at final status'), 'info');
+      }
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      this.showNotification(this.t('Failed to update order status'), 'error');
+    }
+  }
+
+  trackOrder(orderNumber) {
+    this.showNotification(`${this.t('Tracking order')} ${orderNumber} - ${this.t('Feature coming soon!')}`, 'info');
   }
 
   // Category page implementation

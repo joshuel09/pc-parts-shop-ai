@@ -10,6 +10,7 @@ import brands from './routes/brands';
 import cart from './routes/cart';
 import auth from './routes/auth';
 import admin from './routes/admin';
+import orders from './routes/orders';
 
 // Import middleware
 import { authMiddleware } from './middleware/auth';
@@ -37,6 +38,7 @@ app.route('/api/brands', brands);
 app.route('/api/cart', cart);
 app.route('/api/auth', auth);
 app.route('/api/admin', admin);
+app.route('/api/orders', orders);
 
 // Health check endpoint
 app.get('/api/health', (c) => {
@@ -265,7 +267,7 @@ app.get('*', (c) => {
                                             <i class="fas fa-user-cog mr-3 w-4"></i>
                                             ${t('Account Settings')}
                                         </button>
-                                        <button id="ordersBtn" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                                        <button onclick="app.navigateTo('/orders')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
                                             <i class="fas fa-box mr-3 w-4"></i>
                                             ${t('My Orders')}
                                         </button>

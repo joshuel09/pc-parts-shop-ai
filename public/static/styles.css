@@ -444,3 +444,33 @@
 .g_id_signin {
   @apply w-full;
 }
+
+/* Payment options styling */
+.payment-option {
+  @apply flex items-start p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-primary-300 hover:bg-primary-50 transition-all duration-200;
+}
+
+.payment-option:has(input:checked) {
+  @apply border-primary-500 bg-primary-50;
+}
+
+/* Order timeline styling */
+.order-timeline {
+  @apply flex items-center justify-between relative;
+}
+
+.order-timeline::before {
+  content: '';
+  @apply absolute top-5 left-10 right-10 h-0.5 bg-gray-200;
+}
+
+/* Checkout form responsive */
+@media (max-width: 768px) {
+  .checkout-form {
+    @apply space-y-4;
+  }
+  
+  .checkout-summary {
+    @apply mt-8;
+  }
+}
