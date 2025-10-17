@@ -292,6 +292,7 @@ export interface AuthUser {
   last_name?: string;
   role: string;
   language_preference: string;
+  avatar?: string;
 }
 
 export interface JWTPayload {

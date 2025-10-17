@@ -80,6 +80,9 @@ app.get('*', (c) => {
         <!-- HTTP Client -->
         <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
         
+        <!-- Google OAuth -->
+        <script src="https://accounts.google.com/gsi/client" async defer></script>
+        
         <!-- Custom styles -->
         <link href="/static/styles.css" rel="stylesheet">
         
@@ -189,10 +192,95 @@ app.get('*', (c) => {
                         </div>
                         
                         <!-- Account -->
-                        <div class="relative">
-                            <button id="accountBtn" class="text-gray-600 hover:text-primary-600">
-                                <i class="fas fa-user text-xl"></i>
+                        <div class="relative" id="accountContainer">
+                            <button id="accountBtn" class="text-gray-600 hover:text-primary-600 flex items-center space-x-2">
+                                <div id="userAvatar" class="w-8 h-8 rounded-full bg-gray-300 hidden items-center justify-center text-sm font-medium text-gray-600">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <i id="defaultUserIcon" class="fas fa-user text-xl"></i>
+                                <i class="fas fa-chevron-down text-xs"></i>
                             </button>
+                            
+                            <!-- User Dropdown Menu -->
+                            <div id="userDropdown" class="absolute right-0 top-full mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 hidden z-50">
+                                <!-- Not logged in state -->
+                                <div id="notLoggedInState" class="p-4">
+                                    <div class="text-center mb-4">
+                                        <i class="fas fa-user-circle text-4xl text-gray-400 mb-2"></i>
+                                        <p class="text-sm text-gray-600">${t('Sign in to your account')}</p>
+                                    </div>
+                                    
+                                    <!-- Google Sign In Button -->
+                                    <div id="g_id_onload"
+                                         data-client_id="YOUR_GOOGLE_CLIENT_ID"
+                                         data-context="signin"
+                                         data-ux_mode="popup"
+                                         data-callback="handleGoogleLogin"
+                                         data-auto_prompt="false">
+                                    </div>
+                                    
+                                    <div class="g_id_signin mb-3"
+                                         data-type="standard"
+                                         data-shape="rectangular"
+                                         data-theme="outline"
+                                         data-text="signin_with"
+                                         data-size="large"
+                                         data-logo_alignment="left">
+                                    </div>
+                                    
+                                    <div class="text-center text-sm text-gray-500 mb-3">${t('or')}</div>
+                                    
+                                    <!-- Quick Login for Demo -->
+                                    <button id="demoLoginBtn" class="w-full btn-primary text-sm py-2 mb-2">
+                                        <i class="fas fa-user-check mr-2"></i>
+                                        ${t('Quick Demo Login')}
+                                    </button>
+                                    
+                                    <div class="flex space-x-2">
+                                        <button id="showLoginForm" class="flex-1 btn-secondary text-xs py-1">
+                                            ${t('Sign In')}
+                                        </button>
+                                        <button id="showRegisterForm" class="flex-1 btn-secondary text-xs py-1">
+                                            ${t('Register')}
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Logged in state -->
+                                <div id="loggedInState" class="hidden">
+                                    <div class="px-4 py-3 border-b border-gray-200">
+                                        <div class="flex items-center space-x-3">
+                                            <div id="loggedInAvatar" class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
+                                                <i class="fas fa-user text-primary-600"></i>
+                                            </div>
+                                            <div>
+                                                <div id="userName" class="font-medium text-gray-900">User Name</div>
+                                                <div id="userEmail" class="text-sm text-gray-600">user@example.com</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="py-2">
+                                        <button id="profileBtn" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                                            <i class="fas fa-user-cog mr-3 w-4"></i>
+                                            ${t('Account Settings')}
+                                        </button>
+                                        <button id="ordersBtn" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                                            <i class="fas fa-box mr-3 w-4"></i>
+                                            ${t('My Orders')}
+                                        </button>
+                                        <button id="wishlistBtn" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                                            <i class="fas fa-heart mr-3 w-4"></i>
+                                            ${t('Wishlist')}
+                                        </button>
+                                        <div class="border-t border-gray-200 my-2"></div>
+                                        <button id="logoutBtn" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center">
+                                            <i class="fas fa-sign-out-alt mr-3 w-4"></i>
+                                            ${t('Sign Out')}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -262,6 +350,13 @@ app.get('*', (c) => {
             apiBase: '/api',
             currency: '¥'
           };
+          
+          // Google OAuth callback
+          function handleGoogleLogin(response) {
+            if (window.app) {
+              window.app.handleGoogleLogin(response);
+            }
+          }
         </script>
         <script src="/static/app.js"></script>
     </body>

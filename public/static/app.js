@@ -85,17 +85,8 @@ class PCPartsShop {
       });
     }
 
-    // Account button
-    const accountBtn = document.getElementById('accountBtn');
-    if (accountBtn) {
-      accountBtn.addEventListener('click', () => {
-        if (this.currentUser) {
-          this.showAccountMenu();
-        } else {
-          this.showLoginForm();
-        }
-      });
-    }
+    // Account dropdown functionality
+    this.setupAccountDropdown();
   }
 
   route() {
@@ -1122,7 +1113,33 @@ class PCPartsShop {
         'View All Categories': 'View All Categories',
         'Find the perfect components for your build': 'Find the perfect components for your build',
         'Back to Home': 'Back to Home',
-        'Discover our comprehensive selection of PC components and peripherals. From high-performance processors to cutting-edge graphics cards.': 'Discover our comprehensive selection of PC components and peripherals. From high-performance processors to cutting-edge graphics cards.'
+        'Discover our comprehensive selection of PC components and peripherals. From high-performance processors to cutting-edge graphics cards.': 'Discover our comprehensive selection of PC components and peripherals. From high-performance processors to cutting-edge graphics cards.',
+        'Sign in to your account': 'Sign in to your account',
+        'or': 'or',
+        'Quick Demo Login': 'Quick Demo Login',
+        'Sign In': 'Sign In',
+        'Register': 'Register',
+        'Account Settings': 'Account Settings',
+        'My Orders': 'My Orders',
+        'Wishlist': 'Wishlist',
+        'Sign Out': 'Sign Out',
+        'Create Account': 'Create Account',
+        'First Name': 'First Name',
+        'Last Name': 'Last Name',
+        'Email': 'Email',
+        'Password': 'Password',
+        'Cancel': 'Cancel',
+        'Please fill in all fields': 'Please fill in all fields',
+        'Demo login successful!': 'Demo login successful!',
+        'Demo login failed': 'Demo login failed',
+        'Logged out successfully': 'Logged out successfully',
+        'Login successful!': 'Login successful!',
+        'Login failed': 'Login failed',
+        'Account created successfully!': 'Account created successfully!',
+        'Registration failed': 'Registration failed',
+        'Google login successful!': 'Google login successful!',
+        'Google login failed': 'Google login failed',
+        'Google authentication failed': 'Google authentication failed'
       },
       jp: {
         // Navigation
@@ -1197,7 +1214,33 @@ class PCPartsShop {
         'View All Categories': 'すべてのカテゴリーを表示',
         'Find the perfect components for your build': 'あなたのビルドに最適なコンポーネントを見つけてください',
         'Back to Home': 'ホームに戻る',
-        'Discover our comprehensive selection of PC components and peripherals. From high-performance processors to cutting-edge graphics cards.': 'PCコンポーネントと周辺機器の包括的な選択を発見してください。高性能プロセッサーから最先端のグラフィックスカードまで。'
+        'Discover our comprehensive selection of PC components and peripherals. From high-performance processors to cutting-edge graphics cards.': 'PCコンポーネントと周辺機器の包括的な選択を発見してください。高性能プロセッサーから最先端のグラフィックスカードまで。',
+        'Sign in to your account': 'アカウントにサインイン',
+        'or': 'または',
+        'Quick Demo Login': 'クイックデモログイン',
+        'Sign In': 'サインイン',
+        'Register': '登録',
+        'Account Settings': 'アカウント設定',
+        'My Orders': 'マイオーダー',
+        'Wishlist': 'ウィッシュリスト',
+        'Sign Out': 'サインアウト',
+        'Create Account': 'アカウント作成',
+        'First Name': '名',
+        'Last Name': '姓',
+        'Email': 'メール',
+        'Password': 'パスワード',
+        'Cancel': 'キャンセル',
+        'Please fill in all fields': 'すべてのフィールドに入力してください',
+        'Demo login successful!': 'デモログイン成功！',
+        'Demo login failed': 'デモログインに失敗しました',
+        'Logged out successfully': 'ログアウトしました',
+        'Login successful!': 'ログイン成功！',
+        'Login failed': 'ログインに失敗しました',
+        'Account created successfully!': 'アカウントが正常に作成されました！',
+        'Registration failed': '登録に失敗しました',
+        'Google login successful!': 'Googleログイン成功！',
+        'Google login failed': 'Googleログインに失敗しました',
+        'Google authentication failed': 'Google認証に失敗しました'
       }
     };
   }
@@ -1327,28 +1370,386 @@ class PCPartsShop {
     `;
   }
 
-  // Auth methods (simplified for now)
+  // Auth methods and user management
+  setupAccountDropdown() {
+    const accountBtn = document.getElementById('accountBtn');
+    const userDropdown = document.getElementById('userDropdown');
+    const accountContainer = document.getElementById('accountContainer');
+
+    if (!accountBtn || !userDropdown) return;
+
+    // Toggle dropdown on click
+    accountBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      userDropdown.classList.toggle('hidden');
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!accountContainer.contains(e.target)) {
+        userDropdown.classList.add('hidden');
+      }
+    });
+
+    // Demo login button
+    const demoLoginBtn = document.getElementById('demoLoginBtn');
+    if (demoLoginBtn) {
+      demoLoginBtn.addEventListener('click', () => {
+        this.demoLogin();
+      });
+    }
+
+    // Login/Register form buttons
+    const showLoginForm = document.getElementById('showLoginForm');
+    const showRegisterForm = document.getElementById('showRegisterForm');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    if (showLoginForm) {
+      showLoginForm.addEventListener('click', () => {
+        this.showLoginModal();
+      });
+    }
+
+    if (showRegisterForm) {
+      showRegisterForm.addEventListener('click', () => {
+        this.showRegisterModal();
+      });
+    }
+
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', () => {
+        this.logout();
+      });
+    }
+
+    // Update UI based on auth state
+    this.updateAuthUI();
+  }
+
   async checkAuth() {
     try {
       const response = await axios.get('/auth/me');
       if (response.data.success) {
         this.currentUser = response.data.data;
+        this.updateAuthUI();
       }
     } catch (error) {
       // Not authenticated
+      this.currentUser = null;
       localStorage.removeItem('authToken');
       delete axios.defaults.headers.common['Authorization'];
+      this.updateAuthUI();
     }
   }
 
-  showLoginForm() {
-    // Simplified - would show login modal
-    this.showNotification('Login functionality - coming soon!', 'info');
+  updateAuthUI() {
+    const notLoggedInState = document.getElementById('notLoggedInState');
+    const loggedInState = document.getElementById('loggedInState');
+    const userAvatar = document.getElementById('userAvatar');
+    const defaultUserIcon = document.getElementById('defaultUserIcon');
+    const userName = document.getElementById('userName');
+    const userEmail = document.getElementById('userEmail');
+    const loggedInAvatar = document.getElementById('loggedInAvatar');
+
+    if (this.currentUser) {
+      // User is logged in
+      if (notLoggedInState) notLoggedInState.classList.add('hidden');
+      if (loggedInState) loggedInState.classList.remove('hidden');
+      
+      // Update user info
+      if (userName) userName.textContent = `${this.currentUser.first_name || ''} ${this.currentUser.last_name || ''}`.trim() || 'User';
+      if (userEmail) userEmail.textContent = this.currentUser.email;
+      
+      // Update avatar in navigation
+      if (userAvatar && defaultUserIcon) {
+        if (this.currentUser.avatar) {
+          userAvatar.innerHTML = `<img src="${this.currentUser.avatar}" class="w-8 h-8 rounded-full object-cover" alt="Avatar">`;
+        } else {
+          const initials = this.getUserInitials();
+          userAvatar.innerHTML = `<span class="text-white font-medium text-sm">${initials}</span>`;
+          userAvatar.classList.add('bg-primary-600');
+        }
+        userAvatar.classList.remove('hidden');
+        userAvatar.classList.add('flex');
+        defaultUserIcon.classList.add('hidden');
+      }
+      
+      // Update dropdown avatar
+      if (loggedInAvatar) {
+        if (this.currentUser.avatar) {
+          loggedInAvatar.innerHTML = `<img src="${this.currentUser.avatar}" class="w-10 h-10 rounded-full object-cover" alt="Avatar">`;
+        } else {
+          const initials = this.getUserInitials();
+          loggedInAvatar.innerHTML = `<span class="text-primary-600 font-medium">${initials}</span>`;
+        }
+      }
+    } else {
+      // User is not logged in
+      if (notLoggedInState) notLoggedInState.classList.remove('hidden');
+      if (loggedInState) loggedInState.classList.add('hidden');
+      
+      // Reset navigation avatar
+      if (userAvatar && defaultUserIcon) {
+        userAvatar.classList.add('hidden');
+        userAvatar.classList.remove('flex');
+        defaultUserIcon.classList.remove('hidden');
+      }
+    }
   }
 
-  showAccountMenu() {
-    // Simplified - would show account dropdown
-    this.showNotification('Account menu - coming soon!', 'info');
+  getUserInitials() {
+    if (!this.currentUser) return 'U';
+    const first = this.currentUser.first_name?.[0]?.toUpperCase() || '';
+    const last = this.currentUser.last_name?.[0]?.toUpperCase() || '';
+    return first + last || this.currentUser.email?.[0]?.toUpperCase() || 'U';
+  }
+
+  async demoLogin() {
+    try {
+      // Create a demo user login
+      const demoUser = {
+        id: 999,
+        email: 'demo@pcpartsshop.com',
+        first_name: 'Demo',
+        last_name: 'User',
+        role: 'customer',
+        language_preference: this.config.lang,
+        avatar: null
+      };
+
+      // Set user and token
+      this.currentUser = demoUser;
+      const demoToken = 'demo_token_' + Date.now();
+      localStorage.setItem('authToken', demoToken);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${demoToken}`;
+
+      // Update UI
+      this.updateAuthUI();
+      this.hideDropdown();
+      this.showNotification(this.t('Demo login successful!'), 'success');
+    } catch (error) {
+      console.error('Demo login error:', error);
+      this.showNotification(this.t('Demo login failed'), 'error');
+    }
+  }
+
+  async logout() {
+    try {
+      // Call logout API
+      await axios.post('/auth/logout');
+    } catch (error) {
+      // Continue with logout even if API call fails
+      console.error('Logout API error:', error);
+    }
+
+    // Clear local state
+    this.currentUser = null;
+    localStorage.removeItem('authToken');
+    delete axios.defaults.headers.common['Authorization'];
+    
+    // Update UI
+    this.updateAuthUI();
+    this.hideDropdown();
+    this.showNotification(this.t('Logged out successfully'), 'success');
+  }
+
+  hideDropdown() {
+    const userDropdown = document.getElementById('userDropdown');
+    if (userDropdown) {
+      userDropdown.classList.add('hidden');
+    }
+  }
+
+  showLoginModal() {
+    const modal = this.createModal();
+    modal.innerHTML = `
+      <div class="modal-content max-w-md">
+        <div class="modal-header">
+          <h3 class="modal-title">${this.t('Sign In')}</h3>
+          <button onclick="this.closest('.modal-overlay').remove()" class="text-gray-400 hover:text-gray-600">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <div class="modal-body">
+          <form id="loginForm" class="space-y-4">
+            <div class="form-group">
+              <label class="form-label">${this.t('Email')}</label>
+              <input type="email" id="loginEmail" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">${this.t('Password')}</label>
+              <input type="password" id="loginPassword" class="form-input" required>
+            </div>
+          </form>
+        </div>
+        
+        <div class="modal-footer">
+          <button onclick="this.closest('.modal-overlay').remove()" class="btn btn-secondary">
+            ${this.t('Cancel')}
+          </button>
+          <button onclick="app.handleLogin()" class="btn btn-primary">
+            ${this.t('Sign In')}
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+  }
+
+  showRegisterModal() {
+    const modal = this.createModal();
+    modal.innerHTML = `
+      <div class="modal-content max-w-md">
+        <div class="modal-header">
+          <h3 class="modal-title">${this.t('Create Account')}</h3>
+          <button onclick="this.closest('.modal-overlay').remove()" class="text-gray-400 hover:text-gray-600">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <div class="modal-body">
+          <form id="registerForm" class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div class="form-group">
+                <label class="form-label">${this.t('First Name')}</label>
+                <input type="text" id="registerFirstName" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">${this.t('Last Name')}</label>
+                <input type="text" id="registerLastName" class="form-input" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">${this.t('Email')}</label>
+              <input type="email" id="registerEmail" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">${this.t('Password')}</label>
+              <input type="password" id="registerPassword" class="form-input" required>
+            </div>
+          </form>
+        </div>
+        
+        <div class="modal-footer">
+          <button onclick="this.closest('.modal-overlay').remove()" class="btn btn-secondary">
+            ${this.t('Cancel')}
+          </button>
+          <button onclick="app.handleRegister()" class="btn btn-primary">
+            ${this.t('Create Account')}
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+  }
+
+  async handleLogin() {
+    const email = document.getElementById('loginEmail')?.value;
+    const password = document.getElementById('loginPassword')?.value;
+
+    if (!email || !password) {
+      this.showNotification(this.t('Please fill in all fields'), 'error');
+      return;
+    }
+
+    try {
+      const response = await axios.post('/auth/login', {
+        email,
+        password
+      });
+
+      if (response.data.success) {
+        this.currentUser = response.data.data.user;
+        localStorage.setItem('authToken', response.data.data.token);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.data.token}`;
+        
+        this.updateAuthUI();
+        document.querySelector('.modal-overlay')?.remove();
+        this.showNotification(this.t('Login successful!'), 'success');
+      } else {
+        this.showNotification(response.data.error || this.t('Login failed'), 'error');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      this.showNotification(error.response?.data?.error || this.t('Login failed'), 'error');
+    }
+  }
+
+  async handleRegister() {
+    const firstName = document.getElementById('registerFirstName')?.value;
+    const lastName = document.getElementById('registerLastName')?.value;
+    const email = document.getElementById('registerEmail')?.value;
+    const password = document.getElementById('registerPassword')?.value;
+
+    if (!firstName || !lastName || !email || !password) {
+      this.showNotification(this.t('Please fill in all fields'), 'error');
+      return;
+    }
+
+    try {
+      const response = await axios.post('/auth/register', {
+        firstName,
+        lastName,
+        email,
+        password,
+        languagePreference: this.config.lang
+      });
+
+      if (response.data.success) {
+        this.currentUser = response.data.data.user;
+        localStorage.setItem('authToken', response.data.data.token);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.data.token}`;
+        
+        this.updateAuthUI();
+        document.querySelector('.modal-overlay')?.remove();
+        this.showNotification(this.t('Account created successfully!'), 'success');
+      } else {
+        this.showNotification(response.data.error || this.t('Registration failed'), 'error');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      this.showNotification(error.response?.data?.error || this.t('Registration failed'), 'error');
+    }
+  }
+
+  // Google OAuth callback
+  async handleGoogleLogin(response) {
+    try {
+      // Decode the JWT token from Google
+      const payload = JSON.parse(atob(response.credential.split('.')[1]));
+      
+      const googleUserInfo = {
+        email: payload.email,
+        name: payload.name,
+        given_name: payload.given_name,
+        family_name: payload.family_name,
+        picture: payload.picture
+      };
+
+      // Send to our backend
+      const authResponse = await axios.post('/auth/google', {
+        token: response.credential,
+        userInfo: googleUserInfo
+      });
+
+      if (authResponse.data.success) {
+        this.currentUser = authResponse.data.data.user;
+        localStorage.setItem('authToken', authResponse.data.data.token);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${authResponse.data.data.token}`;
+        
+        this.updateAuthUI();
+        this.hideDropdown();
+        this.showNotification(this.t('Google login successful!'), 'success');
+      } else {
+        this.showNotification(authResponse.data.error || this.t('Google login failed'), 'error');
+      }
+    } catch (error) {
+      console.error('Google login error:', error);
+      this.showNotification(this.t('Google authentication failed'), 'error');
+    }
   }
 
   // Category page implementation
@@ -1805,6 +2206,9 @@ class PCPartsShop {
 
 // Initialize the application
 const app = new PCPartsShop();
+
+// Expose app instance globally for callbacks
+window.app = app;
 
 // Hide loading indicator
 document.addEventListener('DOMContentLoaded', () => {

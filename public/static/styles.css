@@ -410,3 +410,37 @@
 #logoLink:active {
   @apply transform scale-95;
 }
+
+/* User dropdown styles */
+#accountContainer:hover #userDropdown {
+  @apply block;
+}
+
+#userDropdown {
+  animation: fadeInDown 0.2s ease-out;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* User avatar styles */
+.user-avatar {
+  @apply transition-all duration-200;
+}
+
+.user-avatar:hover {
+  @apply ring-2 ring-primary-300;
+}
+
+/* Google Sign In button custom styling */
+.g_id_signin {
+  @apply w-full;
+}

@@ -192,6 +192,87 @@ auth.get('/me', async (c) => {
   }
 });
 
+// POST /api/auth/google - Google OAuth login
+auth.post('/google', async (c) => {
+  try {
+    const { token, userInfo } = await c.req.json();
+
+    if (!token || !userInfo || !userInfo.email) {
+      return c.json({
+        success: false,
+        error: 'Invalid Google authentication data'
+      }, 400);
+    }
+
+    const db = new DatabaseService(c.env.DB);
+    const { email, name, given_name, family_name, picture } = userInfo;
+
+    // Check if user exists
+    let user = await db.getUserByEmail(email);
+
+    if (!user) {
+      // Create new user from Google data
+      const userData: Omit<User, 'id' | 'created_at' | 'updated_at'> = {
+        email,
+        password_hash: '', // No password for OAuth users
+        first_name: given_name || name?.split(' ')[0] || 'User',
+        last_name: family_name || name?.split(' ').slice(1).join(' ') || '',
+        phone: null,
+        role: 'customer',
+        is_active: true,
+        email_verified: true, // Google accounts are pre-verified
+        language_preference: 'en',
+        last_login_at: undefined
+      };
+
+      const userId = await db.createUser(userData);
+      
+      // Get the created user
+      user = await db.getUserByEmail(email);
+      if (!user) {
+        throw new Error('Failed to create user');
+      }
+    }
+
+    // Update last login
+    await c.env.DB.prepare(
+      'UPDATE users SET last_login_at = datetime("now") WHERE id = ?'
+    ).bind(user.id).run();
+
+    // Create JWT token
+    const jwtToken = await createJWT({
+      userId: user.id,
+      email: user.email,
+      role: user.role
+    }, JWT_SECRET);
+
+    const authUser: AuthUser = {
+      id: user.id,
+      email: user.email,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      role: user.role,
+      language_preference: user.language_preference,
+      avatar: picture // Add Google profile picture
+    };
+
+    return c.json({
+      success: true,
+      message: 'Google login successful',
+      data: {
+        user: authUser,
+        token: jwtToken
+      }
+    });
+  } catch (error) {
+    console.error('Google login error:', error);
+    return c.json({
+      success: false,
+      error: 'Google authentication failed'
+    }, 500);
+  }
+});
+
 // POST /api/auth/logout - Logout (client-side token removal)
 auth.post('/logout', async (c) => {
   return c.json({
