@@ -273,6 +273,65 @@ auth.post('/google', async (c) => {
   }
 });
 
+// POST /api/auth/demo-login - Demo login with preset credentials
+auth.post('/demo-login', async (c) => {
+  try {
+    const db = new DatabaseService(c.env.DB);
+
+    // Get the demo user
+    const user = await db.getUserByEmail('demo@pcpartsshop.com');
+    if (!user) {
+      return c.json({
+        success: false,
+        error: 'Demo user not found. Please run database seed.'
+      }, 404);
+    }
+
+    if (!user.is_active) {
+      return c.json({
+        success: false,
+        error: 'Demo account is deactivated'
+      }, 401);
+    }
+
+    // Update last login
+    await c.env.DB.prepare(
+      'UPDATE users SET last_login_at = datetime("now") WHERE id = ?'
+    ).bind(user.id).run();
+
+    // Create JWT token
+    const token = await createJWT({
+      userId: user.id,
+      email: user.email,
+      role: user.role
+    }, JWT_SECRET);
+
+    const authUser: AuthUser = {
+      id: user.id,
+      email: user.email,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      role: user.role,
+      language_preference: user.language_preference
+    };
+
+    return c.json({
+      success: true,
+      message: 'Demo login successful',
+      data: {
+        user: authUser,
+        token
+      }
+    });
+  } catch (error) {
+    console.error('Demo login error:', error);
+    return c.json({
+      success: false,
+      error: 'Demo login failed'
+    }, 500);
+  }
+});
+
 // POST /api/auth/logout - Logout (client-side token removal)
 auth.post('/logout', async (c) => {
   return c.json({

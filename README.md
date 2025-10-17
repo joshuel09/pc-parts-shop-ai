@@ -103,12 +103,14 @@
    - **Cart modal** with item list, quantities, pricing breakdown
    - **Guest checkout support** with session token management
 
-3. **User Authentication**
-   - User registration and login
-   - JWT-based authentication
-   - Password hashing and security
+3. **User Authentication** ✅ WORKING
+   - **Demo login functionality** working with real JWT authentication
+   - User registration and login with secure password hashing
+   - **JWT-based authentication** with proper backend validation
+   - **Protected API endpoints** (My Orders, etc.) working correctly
    - Role-based access control (customer/admin)
    - Multi-language user preferences
+   - **Quick Demo Login** button for easy testing
 
 4. **Admin Dashboard**
    - Dashboard statistics and analytics
@@ -184,13 +186,19 @@
    - **Quantity controls**: Increase/decrease quantities or remove items
    - **Price breakdown**: Subtotal, tax (10%), shipping (free over ¥10,000), total
    - **Continue shopping** or proceed to **checkout**
-9. **Language Switch**: **WORKING** - Use the language dropdown (EN/JP) in the top navigation
+9. **User Authentication** ✅ WORKING: Access the user menu in the top navigation
+   - **Quick Demo Login**: Click "Quick Demo Login" to instantly log in as a demo user
+   - **My Orders**: Access order history (works with proper JWT authentication)
+   - **User Registration/Login**: Full authentication system available
+   - **Protected Features**: All authenticated features work correctly
+   - **Logout**: Proper session cleanup and token management
+10. **Language Switch**: **WORKING** - Use the language dropdown (EN/JP) in the top navigation
    - Click EN/JP dropdown to switch between English and Japanese
    - **Page content updates instantly** without requiring manual page reload
    - All text, categories, products, and navigation elements translate properly
    - URL automatically updates with ?lang=en or ?lang=jp parameter
-10. **Browser Navigation**: Use back/forward buttons - all pages support proper URL routing
-11. **Logo Navigation** ✅ NEW: **Click the PC Parts Shop logo** to return to homepage from any page
+11. **Browser Navigation**: Use back/forward buttons - all pages support proper URL routing
+12. **Logo Navigation** ✅ NEW: **Click the PC Parts Shop logo** to return to homepage from any page
     - Logo has hover effects with color change and subtle scaling
     - Microchip icon rotates on hover for visual feedback
     - Smooth transitions and proper browser history support

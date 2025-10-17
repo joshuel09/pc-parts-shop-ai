@@ -7,11 +7,19 @@ class PCPartsShop {
     this.cart = { items: [], itemCount: 0, total: 0 };
     this.sessionToken = this.getSessionToken();
     this.translations = this.loadTranslations();
+
     
     // Update language from URL parameters if present
     this.updateLanguageFromURL();
     
     this.init();
+  }
+
+  // Helper method for SPA scroll-to-top after DOM render
+  scrollToTopAfterRender() {
+    requestAnimationFrame(() => {
+      window.scrollTo(0, 0);
+    });
   }
 
   async init() {
@@ -89,38 +97,42 @@ class PCPartsShop {
     this.setupAccountDropdown();
   }
 
-  route() {
+  async route() {
     const path = window.location.pathname;
     const params = new URLSearchParams(window.location.search);
     
+    // Execute the appropriate page method
     if (path === '/' || path === '/home') {
-      this.showHomePage();
+      await this.showHomePage();
     } else if (path === '/products') {
-      this.showProductsPage(params);
+      await this.showProductsPage(params);
     } else if (path.startsWith('/product/')) {
       const productId = path.split('/')[2];
-      this.showProductPage(productId);
+      await this.showProductPage(productId);
     } else if (path === '/categories') {
-      this.showCategoriesPage();
+      await this.showCategoriesPage();
     } else if (path.startsWith('/category/')) {
       const categorySlug = path.split('/')[2];
-      this.showCategoryPage(categorySlug, params);
+      await this.showCategoryPage(categorySlug, params);
     } else if (path === '/cart') {
-      this.showCartPage();
+      await this.showCartPage();
     } else if (path === '/checkout') {
-      this.showCheckoutPage();
+      await this.showCheckoutPage();
     } else if (path === '/checkout/success') {
       this.showOrderSuccessPage();
     } else if (path.startsWith('/orders/')) {
       const orderId = path.split('/')[2];
-      this.showOrderDetailsPage(orderId);
+      await this.showOrderDetailsPage(orderId);
     } else if (path === '/orders') {
-      this.showOrdersPage();
+      await this.showOrdersPage();
     } else if (path === '/admin') {
       this.showAdminDashboard();
     } else {
-      this.showHomePage();
+      await this.showHomePage();
     }
+    
+    // Scroll to top after page content is rendered
+    this.scrollToTopAfterRender();
   }
 
   async showHomePage() {
@@ -2038,30 +2050,27 @@ class PCPartsShop {
 
   async demoLogin() {
     try {
-      // Create a demo user login
-      const demoUser = {
-        id: 999,
-        email: 'demo@pcpartsshop.com',
-        first_name: 'Demo',
-        last_name: 'User',
-        role: 'customer',
-        language_preference: this.config.lang,
-        avatar: null
-      };
+      // Call the backend demo login endpoint
+      const response = await axios.post('/auth/demo-login');
+      
+      if (response.data.success) {
+        const { user, token } = response.data.data;
+        
+        // Set user and token with real authentication data
+        this.currentUser = user;
+        localStorage.setItem('authToken', token);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-      // Set user and token
-      this.currentUser = demoUser;
-      const demoToken = 'demo_token_' + Date.now();
-      localStorage.setItem('authToken', demoToken);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${demoToken}`;
-
-      // Update UI
-      this.updateAuthUI();
-      this.hideDropdown();
-      this.showNotification(this.t('Demo login successful!'), 'success');
+        // Update UI
+        this.updateAuthUI();
+        this.hideDropdown();
+        this.showNotification(this.t('Demo login successful!'), 'success');
+      } else {
+        throw new Error(response.data.error || 'Demo login failed');
+      }
     } catch (error) {
       console.error('Demo login error:', error);
-      this.showNotification(this.t('Demo login failed'), 'error');
+      this.showNotification(this.t('Demo login failed') + ': ' + (error.response?.data?.error || error.message), 'error');
     }
   }
 
@@ -3284,23 +3293,23 @@ class PCPartsShop {
   // Navigation helpers
   navigateToCategory(slug) {
     window.history.pushState({}, '', `/category/${slug}`);
-    this.showCategoryPage(slug);
+    this.route();
   }
 
   navigateToProduct(id) {
     window.history.pushState({}, '', `/product/${id}`);
-    this.showProductPage(id);
+    this.route();
   }
 
   navigateToProducts(params = new URLSearchParams()) {
     const url = params.toString() ? `/products?${params}` : '/products';
     window.history.pushState({}, '', url);
-    this.showProductsPage(params);
+    this.route();
   }
 
   navigateToHome() {
     window.history.pushState({}, '', '/');
-    this.showHomePage();
+    this.route();
   }
 
   navigateTo(path) {

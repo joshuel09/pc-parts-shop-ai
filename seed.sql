@@ -56,6 +56,10 @@ INSERT OR IGNORE INTO products (id, sku, name_en, name_jp, description_en, descr
 INSERT OR IGNORE INTO users (id, email, password_hash, first_name, last_name, role, is_active, email_verified) VALUES
 (1, 'admin@pcpartsshop.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/lewF8gocl3yLPdvdq', 'Admin', 'User', 'admin', 1, 1);
 
+-- Add demo user (password: 'demo123')
+INSERT OR IGNORE INTO users (id, email, password_hash, first_name, last_name, role, is_active, email_verified, language_preference) VALUES
+(999, 'demo@pcpartsshop.com', '$2a$12$rQb4PkK8L5vKDg0MzCjVQeZhF7P9XzL5vK8DjC7R4bA2jS1hF3G6y', 'Demo', 'User', 'customer', 1, 1, 'en');
+
 -- Add some sample reviews
 INSERT OR IGNORE INTO reviews (product_id, user_id, rating, title, comment, reviewer_name, reviewer_email, is_verified_purchase, is_published) VALUES
 (1, 1, 5, 'Excellent Performance', 'Great CPU for gaming and productivity. Runs cool and quiet.', 'John Doe', 'john@example.com', 1, 1),

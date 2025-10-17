@@ -353,6 +353,8 @@ app.get('*', (c) => {
             currency: '¥'
           };
           
+
+          
           // Google OAuth callback
           function handleGoogleLogin(response) {
             if (window.app) {
