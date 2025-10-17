@@ -81,7 +81,7 @@ class PCPartsShop {
     const cartBtn = document.getElementById('cartBtn');
     if (cartBtn) {
       cartBtn.addEventListener('click', () => {
-        this.showCart();
+        this.navigateTo('/cart');
       });
     }
 
@@ -693,11 +693,17 @@ class PCPartsShop {
 
   async addToCart(productId, variantId = null, quantity = 1) {
     try {
-      const response = await axios.post('/api/cart/items', {
+      console.log('Adding to cart:', { productId, variantId, quantity });
+      console.log('Current session token:', this.sessionToken);
+      console.log('Axios headers:', axios.defaults.headers.common);
+      
+      const response = await axios.post('/cart/items', {
         productId,
         variantId,
         quantity
       });
+
+      console.log('Add to cart response:', response.data);
 
       if (response.data.success) {
         this.cart = response.data.data;
@@ -705,16 +711,21 @@ class PCPartsShop {
         this.saveSessionToken(this.sessionToken);
         this.updateCartUI();
         this.showNotification(this.t('Added to cart'), 'success');
+      } else {
+        console.error('Add to cart failed:', response.data);
+        this.showNotification(response.data.error || this.t('Failed to add to cart'), 'error');
       }
     } catch (error) {
       console.error('Error adding to cart:', error);
+      console.error('Error details:', error.response?.data);
+      console.error('Error status:', error.response?.status);
       this.showNotification(error.response?.data?.error || this.t('Failed to add to cart'), 'error');
     }
   }
 
   async loadCart() {
     try {
-      const response = await axios.get('/api/cart');
+      const response = await axios.get('/cart');
       if (response.data.success) {
         this.cart = response.data.data;
         this.sessionToken = response.data.sessionToken;
@@ -806,6 +817,155 @@ class PCPartsShop {
     document.body.appendChild(modal);
   }
 
+  async showCartPage() {
+    const app = document.getElementById('app');
+    
+    // Ensure cart is loaded
+    await this.loadCart();
+    
+    app.innerHTML = `
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Breadcrumb -->
+        <nav class="mb-8">
+          <div class="flex items-center space-x-2 text-sm text-gray-600">
+            <a href="/" onclick="app.navigateToHome(); return false;" class="hover:text-primary-600">${this.t('Home')}</a>
+            <i class="fas fa-chevron-right text-xs"></i>
+            <span class="text-gray-900">${this.t('Shopping Cart')}</span>
+          </div>
+        </nav>
+
+        <!-- Cart Header -->
+        <div class="flex items-center justify-between mb-8">
+          <h1 class="text-3xl font-bold text-gray-900">
+            <i class="fas fa-shopping-cart mr-3"></i>
+            ${this.t('Shopping Cart')}
+          </h1>
+          <div class="text-gray-600">
+            ${this.cart.itemCount} ${this.t('items')}
+          </div>
+        </div>
+
+        ${this.cart.items.length === 0 ? `
+          <!-- Empty Cart -->
+          <div class="text-center py-16">
+            <div class="bg-gray-100 rounded-full w-32 h-32 flex items-center justify-center mx-auto mb-6">
+              <i class="fas fa-shopping-cart text-4xl text-gray-400"></i>
+            </div>
+            <h2 class="text-xl font-semibold text-gray-900 mb-2">${this.t('Your cart is empty')}</h2>
+            <p class="text-gray-600 mb-6">${this.t('Looks like you haven\\'t added any items to your cart yet.')}</p>
+            <button onclick="app.navigateToHome()" class="btn-primary inline-flex items-center">
+              <i class="fas fa-arrow-left mr-2"></i>
+              ${this.t('Continue Shopping')}
+            </button>
+          </div>
+        ` : `
+          <!-- Cart Content -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Cart Items -->
+            <div class="lg:col-span-2">
+              <div class="bg-white rounded-lg shadow-sm">
+                <div class="p-6 border-b">
+                  <h2 class="text-lg font-semibold">${this.t('Cart Items')}</h2>
+                </div>
+                <div class="p-6">
+                  <div class="space-y-6">
+                    ${this.cart.items.map(item => this.renderCartPageItem(item)).join('')}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="lg:col-span-1">
+              <div class="bg-white rounded-lg shadow-sm sticky top-4">
+                <div class="p-6 border-b">
+                  <h2 class="text-lg font-semibold">${this.t('Order Summary')}</h2>
+                </div>
+                <div class="p-6">
+                  <div class="space-y-4">
+                    <div class="flex justify-between">
+                      <span>${this.t('Subtotal')} (${this.cart.itemCount} ${this.t('items')}):</span>
+                      <span>${this.config.currency}${this.cart.subtotal.toLocaleString()}</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span>${this.t('Tax')}:</span>
+                      <span>${this.config.currency}${this.cart.tax.toLocaleString()}</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span>${this.t('Shipping')}:</span>
+                      <span>${this.cart.shipping === 0 ? this.t('Free') : this.config.currency + this.cart.shipping.toLocaleString()}</span>
+                    </div>
+                    <hr>
+                    <div class="flex justify-between text-lg font-semibold">
+                      <span>${this.t('Total')}:</span>
+                      <span>${this.config.currency}${this.cart.total.toLocaleString()}</span>
+                    </div>
+                  </div>
+
+                  <div class="mt-6 space-y-3">
+                    <button onclick="app.navigateTo('/checkout')" class="btn-primary w-full">
+                      <i class="fas fa-credit-card mr-2"></i>
+                      ${this.t('Proceed to Checkout')}
+                    </button>
+                    <button onclick="app.navigateToHome()" class="btn-secondary w-full">
+                      <i class="fas fa-arrow-left mr-2"></i>
+                      ${this.t('Continue Shopping')}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `}
+      </div>
+    `;
+  }
+
+  renderCartPageItem(item) {
+    const name = this.config.lang === 'jp' ? item.name_jp : item.name_en;
+    
+    return `
+      <div class="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
+        <!-- Product Image -->
+        <div class="flex-shrink-0">
+          <img src="${item.image_url || '/static/placeholder-product.jpg'}" 
+               alt="${name}" 
+               class="w-20 h-20 object-cover rounded-lg">
+        </div>
+        
+        <!-- Product Info -->
+        <div class="flex-1 min-w-0">
+          <h3 class="text-lg font-medium text-gray-900 truncate">${name}</h3>
+          <p class="text-sm text-gray-600">SKU: ${item.sku}</p>
+          <p class="text-lg font-semibold text-primary-600">${this.config.currency}${item.price.toLocaleString()}</p>
+        </div>
+        
+        <!-- Quantity Controls -->
+        <div class="flex items-center space-x-2">
+          <button onclick="app.updateCartItem(${item.id}, ${item.quantity - 1})" 
+                  class="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-md hover:bg-gray-50"
+                  ${item.quantity <= 1 ? 'disabled' : ''}>
+            <i class="fas fa-minus text-xs"></i>
+          </button>
+          <span class="w-12 text-center font-medium">${item.quantity}</span>
+          <button onclick="app.updateCartItem(${item.id}, ${item.quantity + 1})" 
+                  class="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-md hover:bg-gray-50">
+            <i class="fas fa-plus text-xs"></i>
+          </button>
+        </div>
+        
+        <!-- Item Total & Remove -->
+        <div class="text-right">
+          <p class="text-lg font-semibold text-gray-900">${this.config.currency}${(item.price * item.quantity).toLocaleString()}</p>
+          <button onclick="app.removeCartItem(${item.id})" 
+                  class="text-red-600 text-sm hover:underline mt-1">
+            <i class="fas fa-trash mr-1"></i>${this.t('Remove')}
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
   renderCartItem(item) {
     const name = this.config.lang === 'jp' ? item.name_jp : item.name_en;
     
@@ -843,16 +1003,24 @@ class PCPartsShop {
 
   async updateCartItem(itemId, quantity) {
     try {
-      const response = await axios.put(`/api/cart/items/${itemId}`, { quantity });
+      const response = await axios.put(`/cart/items/${itemId}`, { quantity });
       if (response.data.success) {
         this.cart = response.data.data;
         this.updateCartUI();
+        
+        // Refresh cart page if currently viewing it
+        if (window.location.pathname === '/cart') {
+          this.showCartPage();
+        }
+        
         // Refresh cart modal if open
         const cartModal = document.querySelector('.modal-overlay');
         if (cartModal) {
           cartModal.remove();
           this.showCart();
         }
+        
+        this.showNotification(this.t('Cart updated'), 'success');
       }
     } catch (error) {
       console.error('Error updating cart:', error);
@@ -862,16 +1030,23 @@ class PCPartsShop {
 
   async removeCartItem(itemId) {
     try {
-      const response = await axios.delete(`/api/cart/items/${itemId}`);
+      const response = await axios.delete(`/cart/items/${itemId}`);
       if (response.data.success) {
         this.cart = response.data.data;
         this.updateCartUI();
+        
+        // Refresh cart page if currently viewing it
+        if (window.location.pathname === '/cart') {
+          this.showCartPage();
+        }
+        
         // Refresh cart modal if open
         const cartModal = document.querySelector('.modal-overlay');
         if (cartModal) {
           cartModal.remove();
           this.showCart();
         }
+        
         this.showNotification(this.t('Item removed from cart'), 'success');
       }
     } catch (error) {
@@ -1601,6 +1776,11 @@ class PCPartsShop {
   navigateToHome() {
     window.history.pushState({}, '', '/');
     this.showHomePage();
+  }
+
+  navigateTo(path) {
+    window.history.pushState({}, '', path);
+    this.route();
   }
 
   async searchProducts(query) {
