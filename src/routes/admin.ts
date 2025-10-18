@@ -89,12 +89,12 @@ admin.get('/products', adminMiddleware, async (c) => {
     const params: any[] = []
 
     if (search) {
-      query += ` AND (p.name LIKE ? OR p.description LIKE ?)`
+      query += ` AND (p.name_en LIKE ? OR p.description_en LIKE ?)`
       params.push(`%${search}%`, `%${search}%`)
     }
 
     if (category) {
-      query += ` AND p.category = ?`
+      query += ` AND p.category_id = ?`
       params.push(category)
     }
 
@@ -113,12 +113,12 @@ admin.get('/products', adminMiddleware, async (c) => {
     const countParams: any[] = []
 
     if (search) {
-      countQuery += ` AND (name LIKE ? OR description LIKE ?)`
+      countQuery += ` AND (name_en LIKE ? OR description_en LIKE ?)`
       countParams.push(`%${search}%`, `%${search}%`)
     }
 
     if (category) {
-      countQuery += ` AND category = ?`
+      countQuery += ` AND category_id = ?`
       countParams.push(category)
     }
 
@@ -180,18 +180,19 @@ admin.post('/products', adminMiddleware, async (c) => {
     const product = await c.req.json()
 
     const query = `
-      INSERT INTO products (name, description, price, stock_quantity, category, brand, image_url, specs)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO products (name_en, name_jp, description_en, description_jp, price, inventory_quantity, category_id, brand_id, specifications_json)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `
 
     const result = await c.env.DB.prepare(query).bind(
-      product.name,
-      product.description,
+      product.name || product.name_en || 'Unknown Product',
+      product.name_jp || product.name || product.name_en || 'Unknown Product',
+      product.description || product.description_en || '',
+      product.description_jp || product.description || product.description_en || '',
       product.price,
-      product.stock_quantity,
-      product.category,
-      product.brand,
-      product.image_url,
+      product.inventory_quantity || product.stock_quantity || 0,
+      product.category_id || product.category || 1,
+      product.brand_id || product.brand || 1,
       JSON.stringify(product.specs || {})
     ).run()
 
@@ -216,19 +217,21 @@ admin.put('/products/:id', adminMiddleware, async (c) => {
 
     const query = `
       UPDATE products 
-      SET name = ?, description = ?, price = ?, stock_quantity = ?, 
-          category = ?, brand = ?, image_url = ?, specs = ?, updated_at = CURRENT_TIMESTAMP
+      SET name_en = ?, name_jp = ?, description_en = ?, description_jp = ?, price = ?, 
+          inventory_quantity = ?, category_id = ?, brand_id = ?, 
+          specifications_json = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `
 
     await c.env.DB.prepare(query).bind(
-      product.name,
-      product.description,
+      product.name || product.name_en,
+      product.name_jp || product.name || product.name_en,
+      product.description || product.description_en,
+      product.description_jp || product.description || product.description_en,
       product.price,
-      product.stock_quantity,
-      product.category,
-      product.brand,
-      product.image_url,
+      product.inventory_quantity || product.stock_quantity,
+      product.category_id || product.category,
+      product.brand_id || product.brand,
       JSON.stringify(product.specs || {}),
       id
     ).run()
@@ -357,7 +360,7 @@ admin.get('/orders/:id', adminMiddleware, async (c) => {
     `
 
     const itemsQuery = `
-      SELECT oi.*, p.name_en as name, p.image_url, b.name as brand
+      SELECT oi.*, p.name_en as name, b.name as brand
       FROM order_items oi
       LEFT JOIN products p ON oi.product_id = p.id
       LEFT JOIN brands b ON p.brand_id = b.id
@@ -574,6 +577,7 @@ admin.get('/dashboard', adminMiddleware, async (c) => {
     // Use correct column name for stock
     const lowStockProducts = await c.env.DB.prepare('SELECT * FROM products WHERE inventory_quantity < 10 ORDER BY inventory_quantity ASC LIMIT 5').all()
 
+    // Monthly sales data
     const monthlySales = await c.env.DB.prepare(`
       SELECT 
         DATE(created_at, 'start of month') as month,
@@ -582,8 +586,96 @@ admin.get('/dashboard', adminMiddleware, async (c) => {
       FROM orders 
       WHERE created_at >= date('now', '-12 months')
       GROUP BY DATE(created_at, 'start of month')
-      ORDER BY month DESC
+      ORDER BY month ASC
     `).all()
+
+    // Daily sales for current month
+    const dailySales = await c.env.DB.prepare(`
+      SELECT 
+        DATE(created_at) as date,
+        COUNT(*) as orders,
+        SUM(total_amount) as revenue
+      FROM orders 
+      WHERE created_at >= date('now', 'start of month')
+      GROUP BY DATE(created_at)
+      ORDER BY date ASC
+    `).all()
+
+    // Weekly sales for current quarter
+    const weeklySales = await c.env.DB.prepare(`
+      SELECT 
+        strftime('%Y-W%W', created_at) as week,
+        COUNT(*) as orders,
+        SUM(total_amount) as revenue
+      FROM orders 
+      WHERE created_at >= date('now', '-3 months')
+      GROUP BY strftime('%Y-W%W', created_at)
+      ORDER BY week ASC
+    `).all()
+
+    // Product category performance
+    const categoryPerformance = await c.env.DB.prepare(`
+      SELECT 
+        c.name_en as category,
+        COUNT(DISTINCT o.id) as orders,
+        SUM(oi.quantity) as items_sold,
+        SUM(oi.quantity * oi.price) as revenue
+      FROM order_items oi
+      LEFT JOIN products p ON oi.product_id = p.id
+      LEFT JOIN categories c ON p.category_id = c.id
+      LEFT JOIN orders o ON oi.order_id = o.id
+      WHERE o.created_at >= date('now', '-30 days')
+      GROUP BY c.id, c.name_en
+      ORDER BY revenue DESC
+      LIMIT 10
+    `).all()
+
+    // Top selling products
+    const topProducts = await c.env.DB.prepare(`
+      SELECT 
+        p.name_en as name,
+        SUM(oi.quantity) as quantity_sold,
+        SUM(oi.quantity * oi.price) as revenue,
+        COUNT(DISTINCT oi.order_id) as orders
+      FROM order_items oi
+      LEFT JOIN products p ON oi.product_id = p.id
+      LEFT JOIN orders o ON oi.order_id = o.id
+      WHERE o.created_at >= date('now', '-30 days')
+      GROUP BY p.id, p.name_en
+      ORDER BY quantity_sold DESC
+      LIMIT 10
+    `).all()
+
+    // Sales by status
+    const salesByStatus = await c.env.DB.prepare(`
+      SELECT 
+        status,
+        COUNT(*) as count,
+        SUM(total_amount) as total_value
+      FROM orders 
+      WHERE created_at >= date('now', '-30 days')
+      GROUP BY status
+    `).all()
+
+    // Growth comparison (current vs previous month)
+    const currentMonth = await c.env.DB.prepare(`
+      SELECT 
+        COUNT(*) as orders,
+        SUM(total_amount) as revenue,
+        AVG(total_amount) as avg_order_value
+      FROM orders 
+      WHERE created_at >= date('now', 'start of month')
+    `).first()
+
+    const previousMonth = await c.env.DB.prepare(`
+      SELECT 
+        COUNT(*) as orders,
+        SUM(total_amount) as revenue,
+        AVG(total_amount) as avg_order_value
+      FROM orders 
+      WHERE created_at >= date('now', 'start of month', '-1 month')
+        AND created_at < date('now', 'start of month')
+    `).first()
 
     return c.json({
       success: true,
@@ -594,7 +686,14 @@ admin.get('/dashboard', adminMiddleware, async (c) => {
         total_revenue: totalRevenue?.total || 0,
         recent_orders: recentOrders?.results || [],
         low_stock_products: lowStockProducts?.results || [],
-        monthly_sales: monthlySales?.results || []
+        monthly_sales: monthlySales?.results || [],
+        daily_sales: dailySales?.results || [],
+        weekly_sales: weeklySales?.results || [],
+        category_performance: categoryPerformance?.results || [],
+        top_products: topProducts?.results || [],
+        sales_by_status: salesByStatus?.results || [],
+        current_month: currentMonth || { orders: 0, revenue: 0, avg_order_value: 0 },
+        previous_month: previousMonth || { orders: 0, revenue: 0, avg_order_value: 0 }
       }
     })
   } catch (error) {

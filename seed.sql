@@ -1,68 +1,106 @@
--- Seed data for PC Parts E-commerce Shop
+-- Insert sample users
+INSERT OR IGNORE INTO users (id, first_name, last_name, email, role) VALUES 
+  (1, 'John', 'Smith', 'john.smith@example.com', 'customer'),
+  (2, 'Sarah', 'Johnson', 'sarah.johnson@example.com', 'customer'),
+  (3, 'Mike', 'Wilson', 'mike.wilson@example.com', 'customer'),
+  (4, 'Emily', 'Brown', 'emily.brown@example.com', 'customer'),
+  (5, 'David', 'Davis', 'david.davis@example.com', 'customer'),
+  (6, 'Lisa', 'Miller', 'lisa.miller@example.com', 'customer'),
+  (7, 'Chris', 'Anderson', 'chris.anderson@example.com', 'customer'),
+  (8, 'Amy', 'Taylor', 'amy.taylor@example.com', 'customer');
 
--- Insert categories
-INSERT OR IGNORE INTO categories (id, name_en, name_jp, slug, description_en, description_jp, sort_order) VALUES
-(1, 'Processors (CPU)', 'プロセッサー (CPU)', 'processors', 'Central Processing Units from Intel and AMD', 'インテルとAMDのCPU', 1),
-(2, 'Graphics Cards (GPU)', 'グラフィックスカード (GPU)', 'graphics-cards', 'Graphics Processing Units for gaming and professional work', 'ゲームや業務用GPU', 2),
-(3, 'Motherboards', 'マザーボード', 'motherboards', 'Motherboards for Intel and AMD processors', 'IntelとAMD対応マザーボード', 3),
-(4, 'Memory (RAM)', 'メモリ (RAM)', 'memory', 'System Memory modules DDR4 and DDR5', 'DDR4とDDR5システムメモリ', 4),
-(5, 'Storage', 'ストレージ', 'storage', 'SSDs, HDDs, and NVMe drives', 'SSD、HDD、NVMeドライブ', 5),
-(6, 'Power Supplies', '電源ユニット', 'power-supplies', 'Modular and non-modular power supply units', 'モジュラー・非モジュラー電源', 6),
-(7, 'Cases', 'PCケース', 'cases', 'ATX, Micro-ATX, and Mini-ITX cases', 'ATX、Micro-ATX、Mini-ITXケース', 7),
-(8, 'Cooling', '冷却システム', 'cooling', 'CPU coolers, case fans, and liquid cooling', 'CPUクーラー、ケースファン、水冷', 8),
-(9, 'Peripherals', '周辺機器', 'peripherals', 'Keyboards, mice, monitors, and headsets', 'キーボード、マウス、モニター、ヘッドセット', 9);
+-- Insert sample categories
+INSERT OR IGNORE INTO categories (id, name_en, name_jp) VALUES 
+  (1, 'CPU', 'CPU'),
+  (2, 'GPU', 'GPU'), 
+  (3, 'Motherboard', 'マザーボード'),
+  (4, 'Memory', 'メモリ'),
+  (5, 'Storage', 'ストレージ'),
+  (6, 'Power Supply', '電源ユニット'),
+  (7, 'Case', 'ケース'),
+  (8, 'Cooling', 'クーリング');
 
--- Insert brands
-INSERT OR IGNORE INTO brands (id, name, description_en, description_jp) VALUES
-(1, 'Intel', 'Leading processor and technology manufacturer', '主要プロセッサー・技術メーカー'),
-(2, 'AMD', 'Advanced Micro Devices - processors and graphics', 'AMD - プロセッサーとグラフィックス'),
-(3, 'NVIDIA', 'Graphics processing and AI technology leader', 'グラフィックス・AI技術のリーダー'),
-(4, 'ASUS', 'Computer hardware and electronics manufacturer', 'コンピューターハードウェア・電子機器メーカー'),
-(5, 'MSI', 'Micro-Star International - gaming hardware', 'MSI - ゲーミングハードウェア'),
-(6, 'Corsair', 'Gaming peripherals and PC components', 'ゲーミング周辺機器・PCパーツ'),
-(7, 'G.Skill', 'High-performance memory modules', '高性能メモリモジュール'),
-(8, 'Samsung', 'Storage and memory technology', 'ストレージ・メモリ技術'),
-(9, 'Western Digital', 'Data storage solutions', 'データストレージソリューション'),
-(10, 'Seasonic', 'Power supply manufacturer', '電源ユニットメーカー');
+-- Insert sample brands
+INSERT OR IGNORE INTO brands (id, name) VALUES 
+  (1, 'AMD'),
+  (2, 'Intel'),
+  (3, 'NVIDIA'),
+  (4, 'ASUS'),
+  (5, 'MSI'),
+  (6, 'Corsair'),
+  (7, 'G.Skill'),
+  (8, 'Samsung'),
+  (9, 'Western Digital'),
+  (10, 'Seasonic');
 
 -- Insert sample products
+INSERT OR IGNORE INTO products (id, name_en, name_jp, description_en, price, inventory_quantity, category_id, brand_id, image_url) VALUES 
+  (1, 'AMD Ryzen 9 7950X', 'AMD Ryzen 9 7950X', 'High-performance 16-core processor', 89800, 15, 1, 1, '/static/placeholder.svg'),
+  (2, 'Intel Core i9-13900K', 'Intel Core i9-13900K', 'Latest Intel flagship processor', 75900, 12, 1, 2, '/static/placeholder.svg'),
+  (3, 'NVIDIA RTX 4090', 'NVIDIA RTX 4090', 'Ultimate gaming graphics card', 249800, 8, 2, 3, '/static/placeholder.svg'),
+  (4, 'NVIDIA RTX 4080', 'NVIDIA RTX 4080', 'High-end gaming graphics card', 189800, 10, 2, 3, '/static/placeholder.svg'),
+  (5, 'ASUS ROG Strix Z790-E', 'ASUS ROG Strix Z790-E', 'Premium Intel Z790 motherboard', 58900, 20, 3, 4, '/static/placeholder.svg'),
+  (6, 'MSI MAG X670E Tomahawk', 'MSI MAG X670E Tomahawk', 'AMD X670E motherboard', 45900, 18, 3, 5, '/static/placeholder.svg'),
+  (7, 'G.Skill Trident Z5 32GB', 'G.Skill Trident Z5 32GB', 'DDR5-6000 32GB memory kit', 28900, 25, 4, 7, '/static/placeholder.svg'),
+  (8, 'Corsair Vengeance LPX 32GB', 'Corsair Vengeance LPX 32GB', 'DDR4-3200 32GB memory kit', 19900, 30, 4, 6, '/static/placeholder.svg'),
+  (9, 'Samsung 980 PRO 2TB', 'Samsung 980 PRO 2TB', 'NVMe SSD with PCIe 4.0', 35900, 22, 5, 8, '/static/placeholder.svg'),
+  (10, 'WD Black SN850X 1TB', 'WD Black SN850X 1TB', 'High-speed gaming SSD', 18900, 28, 5, 9, '/static/placeholder.svg'),
+  (11, 'Seasonic Focus GX-850', 'Seasonic Focus GX-850', '850W 80+ Gold modular PSU', 18900, 15, 6, 10, '/static/placeholder.svg'),
+  (12, 'Corsair RM850x', 'Corsair RM850x', '850W 80+ Gold fully modular PSU', 21900, 12, 6, 6, '/static/placeholder.svg');
 
--- Processors
-INSERT OR IGNORE INTO products (id, sku, name_en, name_jp, description_en, description_jp, short_description_en, short_description_jp, price, compare_price, inventory_quantity, category_id, brand_id, is_featured, specifications_json) VALUES
-(1, 'CPU-INTEL-13700K', 'Intel Core i7-13700K', 'Intel Core i7-13700K', 'High-performance 13th gen processor with 16 cores and 24 threads', '16コア24スレッドの高性能第13世代プロセッサー', '13th gen Intel processor', '第13世代Intelプロセッサー', 52800.00, 58800.00, 25, 1, 1, 1, '{"cores": 16, "threads": 24, "base_clock": "3.4 GHz", "boost_clock": "5.4 GHz", "socket": "LGA1700", "tdp": "125W"}'),
-(2, 'CPU-AMD-7800X3D', 'AMD Ryzen 7 7800X3D', 'AMD Ryzen 7 7800X3D', 'Gaming-optimized processor with 3D V-Cache technology', '3D V-Cache技術搭載ゲーミング最適化プロセッサー', '3D V-Cache gaming CPU', '3D V-Cacheゲーミング CPU', 68800.00, 74800.00, 15, 1, 2, 1, '{"cores": 8, "threads": 16, "base_clock": "4.2 GHz", "boost_clock": "5.0 GHz", "socket": "AM5", "tdp": "120W"}');
+-- Insert sample orders with dates spread across multiple months
+INSERT OR IGNORE INTO orders (id, user_id, status, total_amount, created_at) VALUES 
+  -- September 2024 orders
+  (1, 1, 'delivered', 165700, '2024-09-05 10:30:00'),
+  (2, 2, 'delivered', 249800, '2024-09-08 14:15:00'),
+  (3, 3, 'delivered', 89800, '2024-09-12 09:45:00'),
+  (4, 4, 'delivered', 104800, '2024-09-15 16:20:00'),
+  (5, 5, 'delivered', 75900, '2024-09-18 11:10:00'),
+  (6, 6, 'delivered', 298700, '2024-09-22 13:45:00'),
+  (7, 7, 'delivered', 58900, '2024-09-25 10:15:00'),
+  (8, 8, 'delivered', 48800, '2024-09-28 15:30:00'),
 
--- Graphics Cards
-INSERT OR IGNORE INTO products (id, sku, name_en, name_jp, description_en, description_jp, short_description_en, short_description_jp, price, compare_price, inventory_quantity, category_id, brand_id, is_featured, specifications_json) VALUES
-(3, 'GPU-RTX4070-ASUS', 'ASUS GeForce RTX 4070 DUAL', 'ASUS GeForce RTX 4070 DUAL', 'High-performance graphics card with DLSS 3 and ray tracing', 'DLSS 3とレイトレーシング対応高性能グラフィックスカード', 'RTX 4070 graphics card', 'RTX 4070 グラフィックスカード', 98800.00, 108800.00, 12, 2, 4, 1, '{"memory": "12GB GDDR6X", "memory_bus": "192-bit", "boost_clock": "2475 MHz", "cuda_cores": 5888, "power_consumption": "200W"}'),
-(4, 'GPU-RX7700XT-MSI', 'MSI Radeon RX 7700 XT GAMING X', 'MSI Radeon RX 7700 XT GAMING X', 'AMD RDNA 3 architecture with excellent 1440p performance', '優秀な1440p性能を持つAMD RDNA 3アーキテクチャ', 'RX 7700 XT gaming card', 'RX 7700 XT ゲーミングカード', 78800.00, 88800.00, 8, 2, 5, 0, '{"memory": "12GB GDDR6", "memory_bus": "192-bit", "boost_clock": "2544 MHz", "stream_processors": 3456, "power_consumption": "245W"}');
+  -- October 2024 orders (current month for testing)
+  (9, 1, 'delivered', 189800, '2024-10-02 09:20:00'),
+  (10, 2, 'delivered', 145800, '2024-10-05 14:30:00'),
+  (11, 3, 'processing', 89800, '2024-10-08 11:45:00'),
+  (12, 4, 'shipped', 219700, '2024-10-10 16:15:00'),
+  (13, 5, 'delivered', 75900, '2024-10-12 10:00:00'),
+  (14, 6, 'delivered', 349600, '2024-10-15 13:20:00'),
+  (15, 7, 'processing', 28900, '2024-10-17 09:45:00'),
+  (16, 8, 'pending', 54800, '2024-10-18 08:30:00');
 
--- Motherboards
-INSERT OR IGNORE INTO products (id, sku, name_en, name_jp, description_en, description_jp, short_description_en, short_description_jp, price, compare_price, inventory_quantity, category_id, brand_id, is_featured, specifications_json) VALUES
-(5, 'MB-ASUS-Z790-A', 'ASUS PRIME Z790-A WIFI', 'ASUS PRIME Z790-A WIFI', 'ATX motherboard for 12th and 13th gen Intel processors', '第12・13世代Intel CPU対応ATXマザーボード', 'Z790 ATX motherboard', 'Z790 ATXマザーボード', 32800.00, 38800.00, 20, 3, 4, 0, '{"socket": "LGA1700", "chipset": "Z790", "memory_support": "DDR5-5600", "expansion_slots": "PCIe 5.0 x16, PCIe 4.0 x16", "form_factor": "ATX"}'),
-(6, 'MB-MSI-B650-PRO', 'MSI B650 GAMING PLUS WIFI', 'MSI B650 GAMING PLUS WIFI', 'AMD B650 chipset motherboard with WiFi 6E', 'WiFi 6E搭載AMD B650チップセットマザーボード', 'B650 gaming motherboard', 'B650 ゲーミングマザーボード', 25800.00, 29800.00, 18, 3, 5, 0, '{"socket": "AM5", "chipset": "B650", "memory_support": "DDR5-4800", "expansion_slots": "PCIe 4.0 x16, PCIe 4.0 x1", "form_factor": "ATX"}');
-
--- Memory
-INSERT OR IGNORE INTO products (id, sku, name_en, name_jp, description_en, description_jp, short_description_en, short_description_jp, price, compare_price, inventory_quantity, category_id, brand_id, is_featured, specifications_json) VALUES
-(7, 'RAM-GSKILL-32GB-6000', 'G.Skill Trident Z5 32GB DDR5-6000', 'G.Skill Trident Z5 32GB DDR5-6000', 'High-performance DDR5 memory kit optimized for gaming', 'ゲーミング最適化高性能DDR5メモリキット', '32GB DDR5-6000 kit', '32GB DDR5-6000 キット', 28800.00, 32800.00, 30, 4, 7, 0, '{"capacity": "32GB (2x16GB)", "speed": "DDR5-6000", "timings": "CL36-36-36-96", "voltage": "1.35V", "heat_spreader": "Aluminum"}'),
-(8, 'RAM-CORSAIR-16GB-5600', 'Corsair Vengeance LPX 16GB DDR5-5600', 'Corsair Vengeance LPX 16GB DDR5-5600', 'Reliable DDR5 memory with low profile design', '低プロファイル設計の信頼性の高いDDR5メモリ', '16GB DDR5-5600 kit', '16GB DDR5-5600 キット', 18800.00, 21800.00, 45, 4, 6, 0, '{"capacity": "16GB (2x8GB)", "speed": "DDR5-5600", "timings": "CL36-36-36-76", "voltage": "1.25V", "heat_spreader": "Aluminum"}');
-
--- Storage
-INSERT OR IGNORE INTO products (id, sku, name_en, name_jp, description_en, description_jp, short_description_en, short_description_jp, price, compare_price, inventory_quantity, category_id, brand_id, is_featured, specifications_json) VALUES
-(9, 'SSD-SAMSUNG-1TB-980PRO', 'Samsung 980 PRO 1TB NVMe SSD', 'Samsung 980 PRO 1TB NVMe SSD', 'High-performance PCIe 4.0 NVMe SSD for gaming and professionals', 'ゲーミング・プロ向け高性能PCIe 4.0 NVMe SSD', '1TB PCIe 4.0 NVMe SSD', '1TB PCIe 4.0 NVMe SSD', 18800.00, 22800.00, 35, 5, 8, 0, '{"capacity": "1TB", "interface": "PCIe 4.0 NVMe", "read_speed": "7000 MB/s", "write_speed": "5000 MB/s", "form_factor": "M.2 2280"}'),
-(10, 'HDD-WD-2TB-BLACK', 'WD Black 2TB HDD', 'WD Black 2TB HDD', 'High-performance 7200 RPM hard drive for gaming', 'ゲーミング向け高性能7200回転ハードドライブ', '2TB gaming HDD', '2TB ゲーミング HDD', 12800.00, 14800.00, 40, 5, 9, 0, '{"capacity": "2TB", "speed": "7200 RPM", "cache": "64MB", "interface": "SATA 6Gb/s", "form_factor": "3.5 inch"}');
-
--- Add admin user
-INSERT OR IGNORE INTO users (id, email, password_hash, first_name, last_name, role, is_active, email_verified) VALUES
-(1, 'admin@pcpartsshop.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/lewF8gocl3yLPdvdq', 'Admin', 'User', 'admin', 1, 1);
-
--- Add demo user (password: 'demo123')
-INSERT OR IGNORE INTO users (id, email, password_hash, first_name, last_name, role, is_active, email_verified, language_preference) VALUES
-(999, 'demo@pcpartsshop.com', '$2a$12$rQb4PkK8L5vKDg0MzCjVQeZhF7P9XzL5vK8DjC7R4bA2jS1hF3G6y', 'Demo', 'User', 'customer', 1, 1, 'en');
-
--- Add some sample reviews
-INSERT OR IGNORE INTO reviews (product_id, user_id, rating, title, comment, reviewer_name, reviewer_email, is_verified_purchase, is_published) VALUES
-(1, 1, 5, 'Excellent Performance', 'Great CPU for gaming and productivity. Runs cool and quiet.', 'John Doe', 'john@example.com', 1, 1),
-(1, 1, 4, 'Good but expensive', 'Performance is great but price could be better.', 'Jane Smith', 'jane@example.com', 0, 1),
-(3, 1, 5, 'Amazing Graphics Card', 'Perfect for 1440p gaming. DLSS 3 is a game changer.', 'Mike Johnson', 'mike@example.com', 1, 1),
-(7, 1, 5, 'Fast and Reliable', 'No issues with this memory kit. XMP profile works perfectly.', 'Sarah Wilson', 'sarah@example.com', 1, 1);
+-- Insert sample order items
+INSERT OR IGNORE INTO order_items (order_id, product_id, quantity, price) VALUES 
+  -- Order 1 (Sep)
+  (1, 1, 1, 89800), (1, 7, 1, 28900), (1, 9, 1, 35900), (1, 11, 1, 18900),
+  -- Order 2 (Sep)
+  (2, 3, 1, 249800),
+  -- Order 3 (Sep)
+  (3, 1, 1, 89800),
+  -- Order 4 (Sep)
+  (4, 5, 1, 58900), (4, 12, 1, 21900), (4, 10, 1, 18900),
+  -- Order 5 (Sep)
+  (5, 2, 1, 75900),
+  -- Order 6 (Sep)
+  (6, 3, 1, 249800), (6, 7, 1, 28900), (6, 9, 1, 35900),
+  -- Order 7 (Sep)
+  (7, 5, 1, 58900),
+  -- Order 8 (Sep)
+  (8, 8, 1, 19900), (8, 10, 1, 18900),
+  -- Order 9 (Oct)
+  (9, 4, 1, 189800),
+  -- Order 10 (Oct)
+  (10, 6, 1, 45900), (10, 7, 1, 28900), (10, 11, 1, 18900), (10, 9, 1, 35900), (10, 10, 1, 18900),
+  -- Order 11 (Oct)
+  (11, 1, 1, 89800),
+  -- Order 12 (Oct)
+  (12, 4, 1, 189800), (12, 8, 1, 19900), (12, 11, 1, 18900),
+  -- Order 13 (Oct)
+  (13, 2, 1, 75900),
+  -- Order 14 (Oct)
+  (14, 3, 1, 249800), (14, 1, 1, 89800), (14, 12, 1, 21900),
+  -- Order 15 (Oct)
+  (15, 7, 1, 28900),
+  -- Order 16 (Oct)
+  (16, 8, 1, 19900), (16, 9, 1, 35900);

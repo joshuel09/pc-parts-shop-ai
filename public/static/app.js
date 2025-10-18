@@ -15,6 +15,23 @@ class PCPartsShop {
     this.init();
   }
 
+  // Currency formatting helper function
+  formatPrice(amount) {
+    if (typeof amount !== 'number') {
+      amount = parseFloat(amount) || 0;
+    }
+    
+    const formattedAmount = amount.toLocaleString();
+    
+    if (this.config.lang === 'jp') {
+      // Japanese: amount + 円 (after)
+      return `${formattedAmount}円`;
+    } else {
+      // English: ¥ + amount (before)
+      return `¥${formattedAmount}`;
+    }
+  }
+
   // Helper method for SPA scroll-to-top after DOM render
   scrollToTopAfterRender() {
     requestAnimationFrame(() => {
@@ -342,11 +359,11 @@ class PCPartsShop {
           <!-- Price -->
           <div class="flex items-center space-x-4">
             <span class="text-3xl font-bold text-gray-900">
-              ${this.config.currency}${product.price.toLocaleString()}
+              ${this.formatPrice(product.price)}
             </span>
             ${product.compare_price ? `
               <span class="text-lg text-gray-500 line-through">
-                ${this.config.currency}${product.compare_price.toLocaleString()}
+                ${this.formatPrice(product.compare_price)}
               </span>
             ` : ''}
           </div>
@@ -689,11 +706,11 @@ class PCPartsShop {
           <div class="flex items-center justify-between mb-3">
             <div class="flex items-center space-x-2">
               <span class="text-lg font-bold text-gray-900">
-                ${this.config.currency}${product.price.toLocaleString()}
+                ${this.formatPrice(product.price)}
               </span>
               ${product.compare_price ? `
                 <span class="text-sm text-gray-500 line-through">
-                  ${this.config.currency}${product.compare_price.toLocaleString()}
+                  ${this.formatPrice(product.compare_price)}
                 </span>
               ` : ''}
             </div>
@@ -797,19 +814,19 @@ class PCPartsShop {
             <div class="border-t mt-4 pt-4">
               <div class="flex justify-between items-center mb-2">
                 <span>${this.t('Subtotal')}:</span>
-                <span>${this.config.currency}${this.cart.subtotal.toLocaleString()}</span>
+                <span>${this.formatPrice(this.cart.subtotal)}</span>
               </div>
               <div class="flex justify-between items-center mb-2">
                 <span>${this.t('Tax')}:</span>
-                <span>${this.config.currency}${this.cart.tax.toLocaleString()}</span>
+                <span>${this.formatPrice(this.cart.tax)}</span>
               </div>
               <div class="flex justify-between items-center mb-2">
                 <span>${this.t('Shipping')}:</span>
-                <span>${this.cart.shipping === 0 ? this.t('Free') : this.config.currency + this.cart.shipping.toLocaleString()}</span>
+                <span>${this.cart.shipping === 0 ? this.t('Free') : this.formatPrice(this.cart.shipping)}</span>
               </div>
               <div class="flex justify-between items-center font-bold text-lg border-t pt-2">
                 <span>${this.t('Total')}:</span>
-                <span>${this.config.currency}${this.cart.total.toLocaleString()}</span>
+                <span>${this.formatPrice(this.cart.total)}</span>
               </div>
             </div>
           `}
@@ -899,20 +916,20 @@ class PCPartsShop {
                   <div class="space-y-4">
                     <div class="flex justify-between">
                       <span>${this.t('Subtotal')} (${this.cart.itemCount} ${this.t('items')}):</span>
-                      <span>${this.config.currency}${this.cart.subtotal.toLocaleString()}</span>
+                      <span>${this.formatPrice(this.cart.subtotal)}</span>
                     </div>
                     <div class="flex justify-between">
                       <span>${this.t('Tax')}:</span>
-                      <span>${this.config.currency}${this.cart.tax.toLocaleString()}</span>
+                      <span>${this.formatPrice(this.cart.tax)}</span>
                     </div>
                     <div class="flex justify-between">
                       <span>${this.t('Shipping')}:</span>
-                      <span>${this.cart.shipping === 0 ? this.t('Free') : this.config.currency + this.cart.shipping.toLocaleString()}</span>
+                      <span>${this.cart.shipping === 0 ? this.t('Free') : this.formatPrice(this.cart.shipping)}</span>
                     </div>
                     <hr>
                     <div class="flex justify-between text-lg font-semibold">
                       <span>${this.t('Total')}:</span>
-                      <span>${this.config.currency}${this.cart.total.toLocaleString()}</span>
+                      <span>${this.formatPrice(this.cart.total)}</span>
                     </div>
                   </div>
 
@@ -1179,19 +1196,19 @@ class PCPartsShop {
                 <div class="space-y-3 py-4 border-t">
                   <div class="flex justify-between text-sm">
                     <span>${this.t('Subtotal')}:</span>
-                    <span>${this.config.currency}${this.cart.subtotal.toLocaleString()}</span>
+                    <span>${this.formatPrice(this.cart.subtotal)}</span>
                   </div>
                   <div class="flex justify-between text-sm">
                     <span>${this.t('Tax')}:</span>
-                    <span>${this.config.currency}${this.cart.tax.toLocaleString()}</span>
+                    <span>${this.formatPrice(this.cart.tax)}</span>
                   </div>
                   <div class="flex justify-between text-sm">
                     <span>${this.t('Shipping')}:</span>
-                    <span>${this.cart.shipping === 0 ? this.t('Free') : this.config.currency + this.cart.shipping.toLocaleString()}</span>
+                    <span>${this.cart.shipping === 0 ? this.t('Free') : this.formatPrice(this.cart.shipping)}</span>
                   </div>
                   <div class="flex justify-between text-lg font-semibold pt-3 border-t">
                     <span>${this.t('Total')}:</span>
-                    <span>${this.config.currency}${this.cart.total.toLocaleString()}</span>
+                    <span>${this.formatPrice(this.cart.total)}</span>
                   </div>
                 </div>
 
@@ -1229,10 +1246,10 @@ class PCPartsShop {
         </div>
         <div class="flex-1 min-w-0">
           <p class="text-sm font-medium text-gray-900 truncate">${name}</p>
-          <p class="text-xs text-gray-600">${this.config.currency}${item.price.toLocaleString()} each</p>
+          <p class="text-xs text-gray-600">${this.formatPrice(item.price)} each</p>
         </div>
         <div class="text-sm font-medium text-gray-900">
-          ${this.config.currency}${(item.price * item.quantity).toLocaleString()}
+          ${this.formatPrice(item.price * item.quantity)}
         </div>
       </div>
     `;
@@ -1310,7 +1327,7 @@ class PCPartsShop {
         <div class="flex-1 min-w-0">
           <h3 class="text-lg font-medium text-gray-900 truncate">${name}</h3>
           <p class="text-sm text-gray-600">SKU: ${item.sku}</p>
-          <p class="text-lg font-semibold text-primary-600">${this.config.currency}${item.price.toLocaleString()}</p>
+          <p class="text-lg font-semibold text-primary-600">${this.formatPrice(item.price)}</p>
         </div>
         
         <!-- Quantity Controls -->
@@ -1329,7 +1346,7 @@ class PCPartsShop {
         
         <!-- Item Total & Remove -->
         <div class="text-right">
-          <p class="text-lg font-semibold text-gray-900">${this.config.currency}${(item.price * item.quantity).toLocaleString()}</p>
+          <p class="text-lg font-semibold text-gray-900">${this.formatPrice(item.price * item.quantity)}</p>
           <button onclick="app.removeCartItem(${item.id})" 
                   class="text-red-600 text-sm hover:underline mt-1">
             <i class="fas fa-trash mr-1"></i>${this.t('Remove')}
@@ -1350,7 +1367,7 @@ class PCPartsShop {
         
         <div class="cart-item-info">
           <h4 class="cart-item-name">${name}</h4>
-          <p class="cart-item-price">${this.config.currency}${item.price.toLocaleString()}</p>
+          <p class="cart-item-price">${this.formatPrice(item.price)}</p>
         </div>
         
         <div class="quantity-controls">
@@ -1365,7 +1382,7 @@ class PCPartsShop {
         </div>
         
         <div class="text-right">
-          <p class="font-medium">${this.config.currency}${(item.price * item.quantity).toLocaleString()}</p>
+          <p class="font-medium">${this.formatPrice(item.price * item.quantity)}</p>
           <button onclick="app.removeCartItem(${item.id})" class="text-red-600 text-sm hover:underline">
             <i class="fas fa-trash mr-1"></i>${this.t('Remove')}
           </button>
@@ -1613,7 +1630,45 @@ class PCPartsShop {
         'Pending': 'Pending',
         'Cancelled': 'Cancelled',
         'cod pending': 'COD Pending',
-        'completed': 'Completed'
+        'completed': 'Completed',
+        
+        // Admin translations
+        'admin.login': 'Admin Login',
+        'admin.username': 'Username',
+        'admin.password': 'Password',
+        'admin.signin': 'Sign In',
+        'admin.signout': 'Sign Out',
+        'admin.welcome': 'Sign in to access the admin dashboard',
+        'admin.dashboard': 'Dashboard',
+        'admin.products': 'Products',
+        'admin.orders': 'Orders',
+        'admin.users': 'Users',
+        'admin.totalUsers': 'Total Users',
+        'admin.totalProducts': 'Total Products',
+        'admin.totalOrders': 'Total Orders',
+        'admin.totalRevenue': 'Total Revenue',
+        'admin.recentOrders': 'Recent Orders',
+        'admin.lowStockAlert': 'Low Stock Alert',
+        'admin.allProductsHaveStock': 'All products have sufficient stock',
+        'admin.dailySales': 'Daily Sales (Current Month)',
+        'admin.monthlyRevenue': 'Monthly Revenue Trend',
+        'admin.categoryPerformance': 'Category Performance (Last 30 Days)',
+        'admin.orderStatus': 'Order Status Distribution',
+        'admin.topProducts': 'Top Selling Products (Last 30 Days)',
+        'admin.monthOverMonth': 'Month-over-Month Growth',
+        'admin.orderId': 'Order ID',
+        'admin.customer': 'Customer',
+        'admin.amount': 'Amount',
+        'admin.status': 'Status',
+        'admin.manage': 'Manage',
+        'admin.loadingDashboard': 'Loading dashboard...',
+        'admin.errorLoadingDashboard': 'Error loading dashboard data',
+        'admin.orders.current': 'Current',
+        'admin.orders.previous': 'Previous',
+        'admin.revenue.current': 'Current',
+        'admin.revenue.previous': 'Previous',
+        'admin.avgOrderValue': 'Avg Order Value',
+        'admin.stock': 'Stock'
       },
       jp: {
         // Navigation
@@ -1797,7 +1852,45 @@ class PCPartsShop {
         'Pending': '保留中',
         'Cancelled': 'キャンセル済み',
         'cod pending': '代引き待ち',
-        'completed': '完了'
+        'completed': '完了',
+        
+        // Admin translations
+        'admin.login': '管理者ログイン',
+        'admin.username': 'ユーザー名',
+        'admin.password': 'パスワード',
+        'admin.signin': 'サインイン',
+        'admin.signout': 'サインアウト',
+        'admin.welcome': '管理者ダッシュボードにアクセスするためにサインインしてください',
+        'admin.dashboard': 'ダッシュボード',
+        'admin.products': '製品',
+        'admin.orders': '注文',
+        'admin.users': 'ユーザー',
+        'admin.totalUsers': '総ユーザー数',
+        'admin.totalProducts': '総製品数',
+        'admin.totalOrders': '総注文数',
+        'admin.totalRevenue': '総売上',
+        'admin.recentOrders': '最近の注文',
+        'admin.lowStockAlert': '在庫不足アラート',
+        'admin.allProductsHaveStock': 'すべての製品に十分な在庫があります',
+        'admin.dailySales': '日次売上（今月）',
+        'admin.monthlyRevenue': '月次売上トレンド',
+        'admin.categoryPerformance': 'カテゴリ別パフォーマンス（過去30日）',
+        'admin.orderStatus': '注文ステータス分布',
+        'admin.topProducts': 'トップセラー製品（過去30日）',
+        'admin.monthOverMonth': '前月比成長',
+        'admin.orderId': '注文ID',
+        'admin.customer': '顧客',
+        'admin.amount': '金額',
+        'admin.status': 'ステータス',
+        'admin.manage': '管理',
+        'admin.loadingDashboard': 'ダッシュボード読み込み中...',
+        'admin.errorLoadingDashboard': 'ダッシュボードデータの読み込みエラー',
+        'admin.orders.current': '今月',
+        'admin.orders.previous': '前月',
+        'admin.revenue.current': '今月',
+        'admin.revenue.previous': '前月',
+        'admin.avgOrderValue': '平均注文金額',
+        'admin.stock': '在庫'
       }
     };
   }
@@ -1836,6 +1929,29 @@ class PCPartsShop {
   t(key) {
     const lang = this.config.lang || 'en';
     return this.translations[lang][key] || this.translations['en'][key] || key;
+  }
+
+  get language() {
+    return this.config.lang || 'en';
+  }
+
+  changeAdminLanguage(newLang) {
+    // Update config
+    this.config.lang = newLang;
+    
+    // Update URL with new language parameter
+    const url = new URL(window.location);
+    url.searchParams.set('lang', newLang);
+    
+    // Use replaceState to avoid adding to browser history
+    window.history.replaceState({}, '', url);
+    
+    // Reload admin page content with new language
+    if (this.currentUser && this.currentUser.role === 'admin') {
+      this.showAdminDashboard();
+    } else {
+      this.showAdminLogin();
+    }
   }
 
   getSessionToken() {
@@ -2441,7 +2557,7 @@ class PCPartsShop {
                 <p class="text-sm text-gray-600">${this.t('Placed on')} ${new Date(order.created_at).toLocaleDateString()}</p>
               </div>
               <div class="text-right">
-                <p class="text-2xl font-bold text-primary-600">${this.config.currency}${order.total_amount.toLocaleString()}</p>
+                <p class="text-2xl font-bold text-primary-600">${this.formatPrice(order.total_amount)}</p>
                 <p class="text-sm text-gray-600">${this.t('Total Amount')}</p>
               </div>
             </div>
@@ -2635,7 +2751,7 @@ class PCPartsShop {
             <div>
               <p class="text-sm font-medium text-gray-900">${this.t('Total Amount')}</p>
               <p class="text-lg font-semibold text-primary-600">
-                ${this.config.currency}${order.total_amount.toLocaleString()}
+                ${this.formatPrice(order.total_amount)}
               </p>
             </div>
             <div>
@@ -2721,7 +2837,7 @@ class PCPartsShop {
             <p class="text-gray-600">${this.t('Placed on')} ${new Date(order.created_at).toLocaleDateString()}</p>
           </div>
           <div class="text-right">
-            <p class="text-2xl font-bold text-primary-600">${this.config.currency}${order.total_amount.toLocaleString()}</p>
+            <p class="text-2xl font-bold text-primary-600">${this.formatPrice(order.total_amount)}</p>
             <p class="text-sm text-gray-600">${this.t('Total Amount')}</p>
           </div>
         </div>
@@ -2766,19 +2882,19 @@ class PCPartsShop {
             <div class="space-y-2 text-sm">
               <div class="flex justify-between">
                 <span>${this.t('Subtotal')}:</span>
-                <span>${this.config.currency}${order.subtotal.toLocaleString()}</span>
+                <span>${this.formatPrice(order.subtotal)}</span>
               </div>
               <div class="flex justify-between">
                 <span>${this.t('Tax')}:</span>
-                <span>${this.config.currency}${order.tax_amount.toLocaleString()}</span>
+                <span>${this.formatPrice(order.tax_amount)}</span>
               </div>
               <div class="flex justify-between">
                 <span>${this.t('Shipping')}:</span>
-                <span>${order.shipping_amount === 0 ? this.t('Free') : this.config.currency + order.shipping_amount.toLocaleString()}</span>
+                <span>${order.shipping_amount === 0 ? this.t('Free') : this.formatPrice(order.shipping_amount)}</span>
               </div>
               <div class="flex justify-between font-semibold text-base pt-2 border-t">
                 <span>${this.t('Total')}:</span>
-                <span>${this.config.currency}${order.total_amount.toLocaleString()}</span>
+                <span>${this.formatPrice(order.total_amount)}</span>
               </div>
             </div>
           </div>
@@ -2865,12 +2981,12 @@ class PCPartsShop {
         </div>
         
         <div class="text-right">
-          <p class="font-medium text-gray-900">${this.config.currency}${item.price.toLocaleString()}</p>
+          <p class="font-medium text-gray-900">${this.formatPrice(item.price)}</p>
           <p class="text-sm text-gray-600">${this.t('each')}</p>
         </div>
         
         <div class="text-right">
-          <p class="font-semibold text-gray-900">${this.config.currency}${item.total.toLocaleString()}</p>
+          <p class="font-semibold text-gray-900">${this.formatPrice(item.total)}</p>
           <p class="text-sm text-gray-600">${this.t('total')}</p>
         </div>
       </div>
@@ -3050,19 +3166,25 @@ class PCPartsShop {
                 <div class="flex-shrink-0">
                   <h1 class="text-2xl font-bold text-gray-900">
                     <i class="fas fa-shield-alt text-blue-600 mr-2"></i>
-                    Admin Dashboard
+                    ${this.t('admin.dashboard')}
                   </h1>
                 </div>
               </div>
               <div class="flex items-center space-x-4">
+                <!-- Language Switcher -->
+                <select id="adminDashboardLanguageSelect" onchange="app.changeAdminLanguage(this.value)" 
+                        class="bg-white border border-gray-300 rounded-md px-3 py-1 text-sm">
+                  <option value="en" ${this.language === 'en' ? 'selected' : ''}>English</option>
+                  <option value="jp" ${this.language === 'jp' ? 'selected' : ''}>日本語</option>
+                </select>
                 <span class="text-sm text-gray-600">Welcome, ${this.currentUser.first_name}</span>
                 <button onclick="app.navigateToHome()" class="text-blue-600 hover:text-blue-800">
                   <i class="fas fa-home mr-1"></i>
-                  Back to Store
+                  ${this.t('nav.home')}
                 </button>
                 <button onclick="app.logout()" class="text-red-600 hover:text-red-800">
                   <i class="fas fa-sign-out-alt mr-1"></i>
-                  Logout
+                  ${this.t('admin.signout')}
                 </button>
               </div>
             </div>
@@ -3075,19 +3197,19 @@ class PCPartsShop {
             <nav class="flex space-x-8" id="adminNav">
               <button onclick="app.showAdminSection('dashboard')" 
                       class="admin-nav-btn active px-3 py-2 rounded-md text-sm font-medium">
-                <i class="fas fa-chart-line mr-2"></i>Dashboard
+                <i class="fas fa-chart-line mr-2"></i>${this.t('admin.dashboard')}
               </button>
               <button onclick="app.showAdminSection('products')" 
                       class="admin-nav-btn px-3 py-2 rounded-md text-sm font-medium">
-                <i class="fas fa-box mr-2"></i>Products
+                <i class="fas fa-box mr-2"></i>${this.t('admin.products')}
               </button>
               <button onclick="app.showAdminSection('orders')" 
                       class="admin-nav-btn px-3 py-2 rounded-md text-sm font-medium">
-                <i class="fas fa-shopping-cart mr-2"></i>Orders
+                <i class="fas fa-shopping-cart mr-2"></i>${this.t('admin.orders')}
               </button>
               <button onclick="app.showAdminSection('users')" 
                       class="admin-nav-btn px-3 py-2 rounded-md text-sm font-medium">
-                <i class="fas fa-users mr-2"></i>Users
+                <i class="fas fa-users mr-2"></i>${this.t('admin.users')}
               </button>
             </nav>
           </div>
@@ -3139,31 +3261,40 @@ class PCPartsShop {
     app.innerHTML = `
       <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div class="max-w-md w-full space-y-8">
+          <!-- Language Switcher -->
+          <div class="text-center">
+            <select id="adminLanguageSelect" onchange="app.changeAdminLanguage(this.value)" 
+                    class="bg-white border border-gray-300 rounded-md px-3 py-1 text-sm">
+              <option value="en" ${this.language === 'en' ? 'selected' : ''}>English</option>
+              <option value="jp" ${this.language === 'jp' ? 'selected' : ''}>日本語</option>
+            </select>
+          </div>
+          
           <div>
             <div class="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-blue-100">
               <i class="fas fa-shield-alt text-blue-600 text-xl"></i>
             </div>
             <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-              Admin Access
+              ${this.t('admin.login')}
             </h2>
             <p class="mt-2 text-center text-sm text-gray-600">
-              Sign in to access the admin dashboard
+              ${this.t('admin.welcome')}
             </p>
           </div>
           
           <form class="mt-8 space-y-6" onsubmit="app.handleAdminLogin(event)">
             <div class="rounded-md shadow-sm -space-y-px">
               <div>
-                <label for="admin-username" class="sr-only">Username</label>
+                <label for="admin-username" class="sr-only">${this.t('admin.username')}</label>
                 <input id="admin-username" name="username" type="text" required 
                        class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" 
-                       placeholder="Username">
+                       placeholder="${this.t('admin.username')}">
               </div>
               <div>
-                <label for="admin-password" class="sr-only">Password</label>
+                <label for="admin-password" class="sr-only">${this.t('admin.password')}</label>
                 <input id="admin-password" name="password" type="password" required 
                        class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" 
-                       placeholder="Password">
+                       placeholder="${this.t('admin.password')}">
               </div>
             </div>
 
@@ -3173,14 +3304,14 @@ class PCPartsShop {
                 <span class="absolute left-0 inset-y-0 flex items-center pl-3">
                   <i class="fas fa-lock text-blue-500 group-hover:text-blue-400"></i>
                 </span>
-                Sign in
+                ${this.t('admin.signin')}
               </button>
             </div>
 
             <div class="text-center">
               <button type="button" onclick="app.navigateToHome()" 
                       class="text-blue-600 hover:text-blue-500 text-sm">
-                ← Back to Store
+                ← ${this.t('nav.home')}
               </button>
             </div>
           </form>
@@ -3197,7 +3328,7 @@ class PCPartsShop {
     const loginBtn = document.getElementById('adminLoginBtn');
 
     try {
-      loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Signing in...';
+      loginBtn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i>${this.t('admin.signin')}...`;
       loginBtn.disabled = true;
 
       const response = await axios.post('/admin/login', {
@@ -3232,7 +3363,12 @@ class PCPartsShop {
     document.querySelectorAll('.admin-nav-btn').forEach(btn => {
       btn.classList.remove('active');
     });
-    event.target.classList.add('active');
+    
+    // Add active class to the correct button
+    const activeBtn = document.querySelector(`[onclick*="showAdminSection('${section}')"]`);
+    if (activeBtn) {
+      activeBtn.classList.add('active');
+    }
 
     // Show appropriate section
     switch (section) {
@@ -3256,7 +3392,7 @@ class PCPartsShop {
     content.innerHTML = `
       <div id="dashboardLoading" class="text-center py-8">
         <i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i>
-        <p class="mt-2 text-gray-500">Loading dashboard...</p>
+        <p class="mt-2 text-gray-500">${this.t('admin.loadingDashboard')}</p>
       </div>
     `;
 
@@ -3274,7 +3410,7 @@ class PCPartsShop {
               </div>
               <div class="ml-5 w-0 flex-1">
                 <dl>
-                  <dt class="text-sm font-medium text-gray-500 truncate">Total Users</dt>
+                  <dt class="text-sm font-medium text-gray-500 truncate">${this.t('admin.totalUsers')}</dt>
                   <dd class="text-lg font-medium text-gray-900">${stats.total_users.toLocaleString()}</dd>
                 </dl>
               </div>
@@ -3288,7 +3424,7 @@ class PCPartsShop {
               </div>
               <div class="ml-5 w-0 flex-1">
                 <dl>
-                  <dt class="text-sm font-medium text-gray-500 truncate">Total Products</dt>
+                  <dt class="text-sm font-medium text-gray-500 truncate">${this.t('admin.totalProducts')}</dt>
                   <dd class="text-lg font-medium text-gray-900">${stats.total_products.toLocaleString()}</dd>
                 </dl>
               </div>
@@ -3302,7 +3438,7 @@ class PCPartsShop {
               </div>
               <div class="ml-5 w-0 flex-1">
                 <dl>
-                  <dt class="text-sm font-medium text-gray-500 truncate">Total Orders</dt>
+                  <dt class="text-sm font-medium text-gray-500 truncate">${this.t('admin.totalOrders')}</dt>
                   <dd class="text-lg font-medium text-gray-900">${stats.total_orders.toLocaleString()}</dd>
                 </dl>
               </div>
@@ -3316,8 +3452,8 @@ class PCPartsShop {
               </div>
               <div class="ml-5 w-0 flex-1">
                 <dl>
-                  <dt class="text-sm font-medium text-gray-500 truncate">Total Revenue</dt>
-                  <dd class="text-lg font-medium text-gray-900">¥${(stats.total_revenue || 0).toLocaleString()}</dd>
+                  <dt class="text-sm font-medium text-gray-500 truncate">${this.t('admin.totalRevenue')}</dt>
+                  <dd class="text-lg font-medium text-gray-900">${this.formatPrice(stats.total_revenue || 0)}</dd>
                 </dl>
               </div>
             </div>
@@ -3327,15 +3463,15 @@ class PCPartsShop {
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <!-- Recent Orders -->
           <div class="admin-card">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Recent Orders</h3>
+            <h3 class="text-lg font-medium text-gray-900 mb-4">${this.t('admin.recentOrders')}</h3>
             <div class="overflow-hidden">
               <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                   <tr>
-                    <th class="admin-table th">Order ID</th>
-                    <th class="admin-table th">Customer</th>
-                    <th class="admin-table th">Amount</th>
-                    <th class="admin-table th">Status</th>
+                    <th class="admin-table th">${this.t('admin.orderId')}</th>
+                    <th class="admin-table th">${this.t('admin.customer')}</th>
+                    <th class="admin-table th">${this.t('admin.amount')}</th>
+                    <th class="admin-table th">${this.t('admin.status')}</th>
                   </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -3343,7 +3479,7 @@ class PCPartsShop {
                     <tr>
                       <td class="admin-table td">#${order.id}</td>
                       <td class="admin-table td">${order.first_name} ${order.last_name}</td>
-                      <td class="admin-table td">¥${order.total_amount.toLocaleString()}</td>
+                      <td class="admin-table td">${this.formatPrice(order.total_amount)}</td>
                       <td class="admin-table td">
                         <span class="px-2 py-1 text-xs font-semibold rounded-full ${this.getStatusColor(order.status)}">
                           ${order.status}
@@ -3358,7 +3494,7 @@ class PCPartsShop {
 
           <!-- Low Stock Products -->
           <div class="admin-card">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Low Stock Alert</h3>
+            <h3 class="text-lg font-medium text-gray-900 mb-4">${this.t('admin.lowStockAlert')}</h3>
             <div class="space-y-3">
               ${stats.low_stock_products.length ? stats.low_stock_products.map(product => `
                 <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
@@ -3371,92 +3507,344 @@ class PCPartsShop {
                   </div>
                   <button onclick="app.showAdminSection('products')" 
                           class="text-xs text-blue-600 hover:text-blue-800">
-                    Manage
+                    ${this.t('admin.manage')}
                   </button>
                 </div>
-              `).join('') : '<p class="text-gray-500 text-center py-4">All products have sufficient stock</p>'}
+              `).join('') : `<p class="text-gray-500 text-center py-4">${this.t('admin.allProductsHaveStock')}</p>`}
             </div>
           </div>
         </div>
 
-        ${stats.monthly_sales.length ? `
-          <div class="mt-8">
+        <!-- Sales Analytics Charts -->
+        <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+          
+          <!-- Daily Sales Chart -->
+          ${stats.daily_sales.length ? `
             <div class="admin-card">
-              <h3 class="text-lg font-medium text-gray-900 mb-4">Monthly Sales</h3>
+              <h3 class="text-lg font-medium text-gray-900 mb-4">${this.t('admin.dailySales')}</h3>
               <div class="h-64">
-                <canvas id="salesChart"></canvas>
+                <canvas id="dailySalesChart"></canvas>
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- Monthly Revenue Trend -->
+          ${stats.monthly_sales.length ? `
+            <div class="admin-card">
+              <h3 class="text-lg font-medium text-gray-900 mb-4">${this.t('admin.monthlyRevenue')}</h3>
+              <div class="h-64">
+                <canvas id="monthlySalesChart"></canvas>
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- Category Performance -->
+          ${stats.category_performance.length ? `
+            <div class="admin-card">
+              <h3 class="text-lg font-medium text-gray-900 mb-4">${this.t('admin.categoryPerformance')}</h3>
+              <div class="h-64">
+                <canvas id="categoryChart"></canvas>
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- Sales by Status -->
+          ${stats.sales_by_status.length ? `
+            <div class="admin-card">
+              <h3 class="text-lg font-medium text-gray-900 mb-4">${this.t('admin.orderStatus')}</h3>
+              <div class="h-64">
+                <canvas id="statusChart"></canvas>
+              </div>
+            </div>
+          ` : ''}
+
+        </div>
+
+        <!-- Top Products and Growth Metrics -->
+        <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          <!-- Top Selling Products -->
+          ${stats.top_products.length ? `
+            <div class="admin-card lg:col-span-2">
+              <h3 class="text-lg font-medium text-gray-900 mb-4">${this.t('admin.topProducts')}</h3>
+              <div class="h-64">
+                <canvas id="topProductsChart"></canvas>
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- Growth Comparison -->
+          <div class="admin-card">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">${this.t('admin.monthOverMonth')}</h3>
+            <div class="space-y-4">
+              <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                <div>
+                  <p class="text-sm font-medium text-gray-900">${this.t('admin.orders')}</p>
+                  <p class="text-xs text-gray-500">${this.t('admin.orders.current')}: ${stats.current_month.orders || 0}</p>
+                  <p class="text-xs text-gray-500">${this.t('admin.orders.previous')}: ${stats.previous_month.orders || 0}</p>
+                </div>
+                <div class="text-right">
+                  ${this.calculateGrowth(stats.current_month.orders, stats.previous_month.orders)}
+                </div>
+              </div>
+              
+              <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                <div>
+                  <p class="text-sm font-medium text-gray-900">${this.t('admin.totalRevenue')}</p>
+                  <p class="text-xs text-gray-500">${this.t('admin.revenue.current')}: ${this.formatPrice(stats.current_month.revenue || 0)}</p>
+                  <p class="text-xs text-gray-500">${this.t('admin.revenue.previous')}: ${this.formatPrice(stats.previous_month.revenue || 0)}</p>
+                </div>
+                <div class="text-right">
+                  ${this.calculateGrowth(stats.current_month.revenue, stats.previous_month.revenue)}
+                </div>
+              </div>
+              
+              <div class="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+                <div>
+                  <p class="text-sm font-medium text-gray-900">${this.t('admin.avgOrderValue')}</p>
+                  <p class="text-xs text-gray-500">${this.t('admin.orders.current')}: ${this.formatPrice(Math.round(stats.current_month.avg_order_value || 0))}</p>
+                  <p class="text-xs text-gray-500">${this.t('admin.orders.previous')}: ${this.formatPrice(Math.round(stats.previous_month.avg_order_value || 0))}</p>
+                </div>
+                <div class="text-right">
+                  ${this.calculateGrowth(stats.current_month.avg_order_value, stats.previous_month.avg_order_value)}
+                </div>
               </div>
             </div>
           </div>
-        ` : ''}
+
+        </div>
       `;
 
-      // Create sales chart if data available
-      if (stats.monthly_sales.length) {
-        this.createSalesChart(stats.monthly_sales);
-      }
+      // Create all charts with available data
+      this.createDashboardCharts(stats);
 
     } catch (error) {
       console.error('Dashboard load error:', error);
       content.innerHTML = `
         <div class="text-center py-8 text-red-500">
           <i class="fas fa-exclamation-circle text-2xl mb-2"></i>
-          <p>Error loading dashboard data</p>
+          <p>${this.t('admin.errorLoadingDashboard')}</p>
         </div>
       `;
     }
   }
 
-  createSalesChart(salesData) {
-    const ctx = document.getElementById('salesChart');
-    if (!ctx) return;
-
-    new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: salesData.map(d => new Date(d.month).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })),
-        datasets: [
-          {
-            label: 'Revenue (¥)',
-            data: salesData.map(d => d.revenue || 0),
-            borderColor: 'rgb(59, 130, 246)',
-            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-            tension: 0.1
+  createDashboardCharts(stats) {
+    // Daily Sales Chart (Line Chart)
+    if (stats.daily_sales.length) {
+      const dailyCtx = document.getElementById('dailySalesChart');
+      if (dailyCtx) {
+        new Chart(dailyCtx, {
+          type: 'line',
+          data: {
+            labels: stats.daily_sales.map(d => new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
+            datasets: [
+              {
+                label: 'Revenue (¥)',
+                data: stats.daily_sales.map(d => d.revenue || 0),
+                borderColor: 'rgb(59, 130, 246)',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                tension: 0.1,
+                fill: true
+              },
+              {
+                label: 'Orders',
+                data: stats.daily_sales.map(d => d.orders || 0),
+                borderColor: 'rgb(16, 185, 129)',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                tension: 0.1,
+                yAxisID: 'y1',
+                fill: false
+              }
+            ]
           },
-          {
-            label: 'Orders',
-            data: salesData.map(d => d.orders || 0),
-            borderColor: 'rgb(16, 185, 129)',
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-            tension: 0.1,
-            yAxisID: 'y1'
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+              y: { type: 'linear', display: true, position: 'left' },
+              y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false } }
+            }
           }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: {
-          mode: 'index',
-          intersect: false,
-        },
-        scales: {
-          y: {
-            type: 'linear',
-            display: true,
-            position: 'left',
-          },
-          y1: {
-            type: 'linear',
-            display: true,
-            position: 'right',
-            grid: {
-              drawOnChartArea: false,
-            },
-          }
-        }
+        });
       }
-    });
+    }
+
+    // Monthly Sales Chart (Combined Bar and Line)
+    if (stats.monthly_sales.length) {
+      const monthlyCtx = document.getElementById('monthlySalesChart');
+      if (monthlyCtx) {
+        new Chart(monthlyCtx, {
+          type: 'bar',
+          data: {
+            labels: stats.monthly_sales.map(d => new Date(d.month).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })),
+            datasets: [
+              {
+                type: 'bar',
+                label: 'Revenue (¥)',
+                data: stats.monthly_sales.map(d => d.revenue || 0),
+                backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                borderColor: 'rgb(59, 130, 246)',
+                borderWidth: 1
+              },
+              {
+                type: 'line',
+                label: 'Orders',
+                data: stats.monthly_sales.map(d => d.orders || 0),
+                borderColor: 'rgb(16, 185, 129)',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                tension: 0.1,
+                yAxisID: 'y1'
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+              y: { type: 'linear', display: true, position: 'left' },
+              y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false } }
+            }
+          }
+        });
+      }
+    }
+
+    // Category Performance Chart (Horizontal Bar)
+    if (stats.category_performance.length) {
+      const categoryCtx = document.getElementById('categoryChart');
+      if (categoryCtx) {
+        const colors = [
+          '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6',
+          '#F97316', '#06B6D4', '#84CC16', '#EC4899', '#6366F1'
+        ];
+        
+        new Chart(categoryCtx, {
+          type: 'bar',
+          data: {
+            labels: stats.category_performance.map(d => d.category || 'Unknown'),
+            datasets: [
+              {
+                label: 'Revenue (¥)',
+                data: stats.category_performance.map(d => d.revenue || 0),
+                backgroundColor: colors,
+                borderColor: colors.map(color => color),
+                borderWidth: 1
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            plugins: {
+              legend: { display: false }
+            }
+          }
+        });
+      }
+    }
+
+    // Sales by Status Chart (Doughnut)
+    if (stats.sales_by_status.length) {
+      const statusCtx = document.getElementById('statusChart');
+      if (statusCtx) {
+        const statusColors = {
+          pending: '#F59E0B',
+          processing: '#3B82F6',
+          shipped: '#8B5CF6',
+          delivered: '#10B981',
+          cancelled: '#EF4444'
+        };
+        
+        new Chart(statusCtx, {
+          type: 'doughnut',
+          data: {
+            labels: stats.sales_by_status.map(d => d.status.charAt(0).toUpperCase() + d.status.slice(1)),
+            datasets: [{
+              data: stats.sales_by_status.map(d => d.count || 0),
+              backgroundColor: stats.sales_by_status.map(d => statusColors[d.status] || '#6B7280'),
+              borderWidth: 2,
+              borderColor: '#ffffff'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: { padding: 20 }
+              }
+            }
+          }
+        });
+      }
+    }
+
+    // Top Products Chart (Horizontal Bar)
+    if (stats.top_products.length) {
+      const topProductsCtx = document.getElementById('topProductsChart');
+      if (topProductsCtx) {
+        new Chart(topProductsCtx, {
+          type: 'bar',
+          data: {
+            labels: stats.top_products.slice(0, 8).map(d => {
+              const name = d.name || 'Unknown Product';
+              return name.length > 25 ? name.substring(0, 25) + '...' : name;
+            }),
+            datasets: [
+              {
+                label: 'Quantity Sold',
+                data: stats.top_products.slice(0, 8).map(d => d.quantity_sold || 0),
+                backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                borderColor: 'rgb(16, 185, 129)',
+                borderWidth: 1
+              },
+              {
+                label: 'Revenue (¥)',
+                data: stats.top_products.slice(0, 8).map(d => d.revenue || 0),
+                backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                borderColor: 'rgb(59, 130, 246)',
+                borderWidth: 1,
+                yAxisID: 'y1'
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+              x: { type: 'linear', display: true, position: 'bottom' },
+              x1: { type: 'linear', display: true, position: 'top', grid: { drawOnChartArea: false } }
+            }
+          }
+        });
+      }
+    }
+  }
+
+  calculateGrowth(current, previous) {
+    if (!previous || previous === 0) {
+      return current > 0 ? 
+        '<span class="text-green-600 font-medium">+∞%</span>' : 
+        '<span class="text-gray-600 font-medium">0%</span>';
+    }
+    
+    const growth = ((current - previous) / previous) * 100;
+    const color = growth >= 0 ? 'text-green-600' : 'text-red-600';
+    const icon = growth >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down';
+    
+    return `
+      <div class="${color} font-medium">
+        <i class="${icon} text-xs"></i>
+        ${growth >= 0 ? '+' : ''}${growth.toFixed(1)}%
+      </div>
+    `;
   }
 
   getStatusColor(status) {
@@ -3572,7 +3960,7 @@ class PCPartsShop {
                       ${product.category}
                     </span>
                   </td>
-                  <td class="admin-table td">¥${product.price.toLocaleString()}</td>
+                  <td class="admin-table td">${this.formatPrice(product.price)}</td>
                   <td class="admin-table td">
                     <span class="px-2 py-1 text-xs font-semibold rounded-full ${
                       product.stock_quantity === 0 ? 'bg-red-100 text-red-800' :
@@ -3893,7 +4281,7 @@ class PCPartsShop {
                       ${order.item_count} items
                     </span>
                   </td>
-                  <td class="admin-table td">¥${order.total_amount.toLocaleString()}</td>
+                  <td class="admin-table td">${this.formatPrice(order.total_amount)}</td>
                   <td class="admin-table td">
                     <select onchange="app.updateOrderStatus(${order.id}, this.value)" 
                             class="text-xs px-2 py-1 rounded-full border-0 ${this.getStatusColor(order.status)}">
@@ -4004,7 +4392,7 @@ class PCPartsShop {
                   </div>
                   <div class="flex justify-between">
                     <span class="text-gray-500">Total Amount:</span>
-                    <span class="font-medium">¥${order.total_amount.toLocaleString()}</span>
+                    <span class="font-medium">${this.formatPrice(order.total_amount)}</span>
                   </div>
                   <div class="flex justify-between">
                     <span class="text-gray-500">Order Date:</span>
@@ -4075,9 +4463,9 @@ class PCPartsShop {
                             </div>
                           </div>
                         </td>
-                        <td class="px-4 py-2 text-sm text-gray-900">¥${item.price.toLocaleString()}</td>
+                        <td class="px-4 py-2 text-sm text-gray-900">${this.formatPrice(item.price)}</td>
                         <td class="px-4 py-2 text-sm text-gray-900">${item.quantity}</td>
-                        <td class="px-4 py-2 text-sm text-gray-900">¥${(item.price * item.quantity).toLocaleString()}</td>
+                        <td class="px-4 py-2 text-sm text-gray-900">${this.formatPrice(item.price * item.quantity)}</td>
                       </tr>
                     `).join('')}
                   </tbody>
@@ -4206,7 +4594,7 @@ class PCPartsShop {
                     </div>
                   </td>
                   <td class="admin-table td">${user.order_count || 0}</td>
-                  <td class="admin-table td">¥${(user.total_spent || 0).toLocaleString()}</td>
+                  <td class="admin-table td">${this.formatPrice(user.total_spent || 0)}</td>
                   <td class="admin-table td">
                     <div class="text-sm text-gray-900">${new Date(user.created_at).toLocaleDateString()}</div>
                   </td>
@@ -4332,11 +4720,11 @@ class PCPartsShop {
                   </div>
                   <div class="flex justify-between">
                     <span class="text-gray-500">Total Spent:</span>
-                    <span class="font-medium">¥${(user.total_spent || 0).toLocaleString()}</span>
+                    <span class="font-medium">${this.formatPrice(user.total_spent || 0)}</span>
                   </div>
                   <div class="flex justify-between">
                     <span class="text-gray-500">Average Order:</span>
-                    <span class="font-medium">¥${user.order_count ? Math.round((user.total_spent || 0) / user.order_count).toLocaleString() : 0}</span>
+                    <span class="font-medium">${user.order_count ? this.formatPrice(Math.round((user.total_spent || 0) / user.order_count)) : this.formatPrice(0)}</span>
                   </div>
                 </div>
               </div>
@@ -4362,7 +4750,7 @@ class PCPartsShop {
                         <tr>
                           <td class="px-4 py-2 text-sm font-medium text-blue-600">#${order.id}</td>
                           <td class="px-4 py-2 text-sm text-gray-900">${order.item_count} items</td>
-                          <td class="px-4 py-2 text-sm text-gray-900">¥${order.total_amount.toLocaleString()}</td>
+                          <td class="px-4 py-2 text-sm text-gray-900">${this.formatPrice(order.total_amount)}</td>
                           <td class="px-4 py-2">
                             <span class="px-2 py-1 text-xs font-semibold rounded-full ${this.getStatusColor(order.status)}">
                               ${order.status}
