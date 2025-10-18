@@ -71,6 +71,8 @@ app.get('*', (c) => {
         
         <!-- Material Icons -->
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <!-- Retro 80s Fonts -->
+        <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
         
         <!-- FontAwesome Icons -->
@@ -89,42 +91,75 @@ app.get('*', (c) => {
         <link href="/static/styles.css" rel="stylesheet">
         
         <script>
-          // Configure Tailwind for Material Design
+          // Configure Tailwind for Retro 80s Design
           tailwind.config = {
             theme: {
               extend: {
                 fontFamily: {
+                  'retro': ['Orbitron', 'monospace'],
+                  'tech': ['Exo 2', 'sans-serif'],
                   'sans': ['Inter', 'system-ui', 'sans-serif']
                 },
                 colors: {
+                  // Retro Neon Colors
+                  neon: {
+                    pink: '#ff00aa',
+                    cyan: '#00ffff',
+                    purple: '#8b00ff',
+                    green: '#39ff14',
+                    yellow: '#ffff00',
+                    orange: '#ff6600'
+                  },
+                  // Dark theme colors
+                  dark: {
+                    900: '#0a0a0f',
+                    800: '#141420',
+                    700: '#1e1e2e',
+                    600: '#28283c',
+                    500: '#32324a',
+                    400: '#3c3c58',
+                    300: '#464666',
+                    200: '#505074',
+                    100: '#5a5a82'
+                  },
                   primary: {
-                    50: '#e3f2fd',
-                    100: '#bbdefb',
-                    200: '#90caf9',
-                    300: '#64b5f6',
-                    400: '#42a5f5',
-                    500: '#2196f3',
-                    600: '#1e88e5',
-                    700: '#1976d2',
-                    800: '#1565c0',
-                    900: '#0d47a1'
+                    50: '#e6f3ff',
+                    100: '#b3d9ff',
+                    200: '#80bfff',
+                    300: '#4da6ff',
+                    400: '#1a8cff',
+                    500: '#0073e6',
+                    600: '#005cb3',
+                    700: '#004580',
+                    800: '#002e4d',
+                    900: '#00171a'
                   },
                   secondary: {
-                    50: '#fce4ec',
-                    100: '#f8bbd9',
-                    200: '#f48fb1',
-                    300: '#f06292',
-                    400: '#ec407a',
-                    500: '#e91e63',
-                    600: '#d81b60',
-                    700: '#c2185b',
-                    800: '#ad1457',
-                    900: '#880e4f'
+                    50: '#ffe6f3',
+                    100: '#ffb3d9',
+                    200: '#ff80bf',
+                    300: '#ff4da6',
+                    400: '#ff1a8c',
+                    500: '#e60073',
+                    600: '#b3005c',
+                    700: '#800045',
+                    800: '#4d002e',
+                    900: '#1a0017'
                   }
                 },
                 boxShadow: {
+                  'neon-cyan': '0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 15px #00ffff',
+                  'neon-pink': '0 0 5px #ff00aa, 0 0 10px #ff00aa, 0 0 15px #ff00aa',
+                  'neon-purple': '0 0 5px #8b00ff, 0 0 10px #8b00ff, 0 0 15px #8b00ff',
+                  'neon-green': '0 0 5px #39ff14, 0 0 10px #39ff14, 0 0 15px #39ff14',
+                  'retro': '0 4px 8px rgba(0,0,0,0.3), 0 0 20px rgba(255,0,170,0.3)',
                   'material': '0 2px 4px rgba(0,0,0,0.1), 0 8px 16px rgba(0,0,0,0.1)',
                   'material-lg': '0 4px 8px rgba(0,0,0,0.12), 0 16px 32px rgba(0,0,0,0.12)'
+                },
+                animation: {
+                  'neon-pulse': 'neon-pulse 2s ease-in-out infinite alternate',
+                  'retro-slide': 'retro-slide 0.5s ease-out',
+                  'glitch': 'glitch 2s infinite'
                 }
               }
             }
@@ -132,6 +167,155 @@ app.get('*', (c) => {
         </script>
         
         <style>
+          /* Retro 80s Animations */
+          @keyframes neon-pulse {
+            from { text-shadow: 0 0 5px #ff00aa, 0 0 10px #ff00aa, 0 0 15px #ff00aa, 0 0 20px #ff00aa; }
+            to { text-shadow: 0 0 10px #ff00aa, 0 0 20px #ff00aa, 0 0 30px #ff00aa, 0 0 40px #ff00aa; }
+          }
+          
+          @keyframes retro-slide {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+          }
+          
+          @keyframes glitch {
+            0%, 100% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+          }
+          
+          /* Retro Background */
+          .retro-bg {
+            background: linear-gradient(45deg, #0a0a0f 0%, #141420 25%, #1e1e2e 50%, #141420 75%, #0a0a0f 100%);
+            background-size: 400% 400%;
+            animation: gradient-shift 8s ease infinite;
+          }
+          
+          @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+          }
+          
+          /* Grid Pattern Overlay */
+          .retro-grid {
+            background-image: 
+              linear-gradient(rgba(0,255,255,0.1) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(0,255,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+          }
+          
+          /* Neon Text Effects */
+          .neon-text-cyan {
+            color: #00ffff;
+            text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 15px #00ffff;
+          }
+          
+          .neon-text-pink {
+            color: #ff00aa;
+            text-shadow: 0 0 5px #ff00aa, 0 0 10px #ff00aa, 0 0 15px #ff00aa;
+          }
+          
+          .neon-text-green {
+            color: #39ff14;
+            text-shadow: 0 0 5px #39ff14, 0 0 10px #39ff14, 0 0 15px #39ff14;
+          }
+          
+          /* Retro Cards */
+          .retro-card {
+            background: linear-gradient(135deg, rgba(20,20,32,0.9) 0%, rgba(30,30,46,0.9) 100%);
+            border: 2px solid #00ffff;
+            border-radius: 0px;
+            box-shadow: 0 0 20px rgba(0,255,255,0.3), inset 0 0 20px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+          }
+          
+          .retro-card:hover {
+            border-color: #ff00aa;
+            box-shadow: 0 0 30px rgba(255,0,170,0.5), inset 0 0 20px rgba(0,0,0,0.5);
+            transform: translateY(-5px);
+          }
+          
+          /* Retro Buttons */
+          .btn-neon {
+            background: linear-gradient(45deg, rgba(0,255,255,0.1) 0%, rgba(255,0,170,0.1) 100%);
+            border: 2px solid #00ffff;
+            color: #00ffff;
+            font-family: 'Orbitron', monospace;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 12px 24px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+          }
+          
+          .btn-neon:hover {
+            background: linear-gradient(45deg, rgba(0,255,255,0.2) 0%, rgba(255,0,170,0.2) 100%);
+            border-color: #ff00aa;
+            color: #ff00aa;
+            box-shadow: 0 0 20px rgba(255,0,170,0.4);
+            transform: translateY(-2px);
+          }
+          
+          .btn-neon::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+          }
+          
+          .btn-neon:hover::before {
+            left: 100%;
+          }
+          
+          /* Retro Input Fields */
+          .input-retro {
+            background: rgba(10,10,15,0.8);
+            border: 2px solid #00ffff;
+            color: #00ffff;
+            font-family: 'Exo 2', sans-serif;
+            padding: 12px 16px;
+            transition: all 0.3s ease;
+          }
+          
+          .input-retro:focus {
+            border-color: #ff00aa;
+            box-shadow: 0 0 15px rgba(255,0,170,0.3);
+            outline: none;
+          }
+          
+          .input-retro::placeholder {
+            color: rgba(0,255,255,0.5);
+          }
+          
+          /* Scanlines Effect */
+          .scanlines::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(transparent 50%, rgba(0,255,255,0.03) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            animation: scanlines 0.1s linear infinite;
+          }
+          
+          @keyframes scanlines {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 4px; }
+          }
+          
+          /* Compatibility - Keep existing classes for admin/other pages */
           .material-card {
             @apply bg-white rounded-lg shadow-material transition-all duration-200 hover:shadow-material-lg;
           }
@@ -149,17 +333,17 @@ app.get('*', (c) => {
           }
         </style>
     </head>
-    <body class="bg-gray-50 font-sans">
+    <body class="retro-bg retro-grid font-tech min-h-screen relative scanlines">
         <!-- Navigation -->
-        <nav class="bg-white shadow-lg sticky top-0 z-50">
+        <nav class="bg-dark-800 bg-opacity-90 shadow-neon-cyan sticky top-0 z-50 border-b-2 border-neon-cyan backdrop-blur-sm">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between items-center h-16">
+                <div class="flex justify-between items-center h-20">
                     <!-- Logo -->
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <h1 id="logoLink" class="text-2xl font-bold text-primary-600 cursor-pointer hover:text-primary-700 transition-colors duration-200">
-                                <i class="fas fa-microchip mr-2 transition-transform duration-200 hover:rotate-12"></i>
-                                PC Parts Shop
+                            <h1 id="logoLink" class="text-3xl font-retro font-black neon-text-cyan cursor-pointer hover:animate-neon-pulse transition-all duration-300 transform hover:scale-105">
+                                <i class="fas fa-microchip mr-3 text-neon-pink animate-pulse"></i>
+                                RETRO TECH
                             </h1>
                         </div>
                     </div>
@@ -167,49 +351,49 @@ app.get('*', (c) => {
                     <!-- Search -->
                     <div class="hidden md:block flex-1 max-w-lg mx-8">
                         <div class="relative">
-                            <input type="text" id="searchInput" placeholder="${t('Search products...')}" 
-                                   class="input-field pl-10 pr-4">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fas fa-search text-gray-400"></i>
+                            <input type="text" id="searchInput" placeholder="${t('SEARCH COMPONENTS...')}" 
+                                   class="input-retro w-full pl-12 pr-4 bg-dark-700 font-retro text-sm uppercase tracking-wider">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fas fa-search neon-text-cyan text-lg"></i>
                             </div>
                         </div>
                     </div>
                     
                     <!-- Navigation items -->
-                    <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-6">
                         <!-- Language Toggle -->
                         <div class="relative">
-                            <select id="languageSelect" class="bg-transparent border-0 text-sm font-medium cursor-pointer">
-                                <option value="en" ${lang === 'en' ? 'selected' : ''}>EN</option>
-                                <option value="jp" ${lang === 'jp' ? 'selected' : ''}>JP</option>
+                            <select id="languageSelect" class="bg-dark-700 border-2 border-neon-cyan text-neon-cyan font-retro text-sm font-bold px-3 py-2 cursor-pointer focus:border-neon-pink focus:text-neon-pink transition-all duration-300">
+                                <option value="en" ${lang === 'en' ? 'selected' : ''} class="bg-dark-800">EN</option>
+                                <option value="jp" ${lang === 'jp' ? 'selected' : ''} class="bg-dark-800">JP</option>
                             </select>
                         </div>
                         
                         <!-- Cart -->
                         <div class="relative">
-                            <button id="cartBtn" class="text-gray-600 hover:text-primary-600 relative">
-                                <i class="fas fa-shopping-cart text-xl"></i>
-                                <span id="cartCount" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center hidden min-w-5 animate-pulse">0</span>
+                            <button id="cartBtn" class="neon-text-cyan hover:neon-text-pink relative transition-all duration-300 transform hover:scale-110">
+                                <i class="fas fa-shopping-cart text-2xl"></i>
+                                <span id="cartCount" class="absolute -top-2 -right-2 bg-neon-pink text-dark-900 text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center hidden min-w-6 animate-pulse font-retro">0</span>
                             </button>
                         </div>
                         
                         <!-- Account -->
                         <div class="relative" id="accountContainer">
-                            <button id="accountBtn" class="text-gray-600 hover:text-primary-600 flex items-center space-x-2">
-                                <div id="userAvatar" class="w-8 h-8 rounded-full bg-gray-300 hidden items-center justify-center text-sm font-medium text-gray-600">
+                            <button id="accountBtn" class="neon-text-cyan hover:neon-text-pink flex items-center space-x-3 transition-all duration-300 transform hover:scale-105">
+                                <div id="userAvatar" class="w-10 h-10 border-2 border-neon-cyan bg-dark-700 hidden items-center justify-center text-sm font-medium neon-text-cyan">
                                     <i class="fas fa-user"></i>
                                 </div>
-                                <i id="defaultUserIcon" class="fas fa-user text-xl"></i>
-                                <i class="fas fa-chevron-down text-xs"></i>
+                                <i id="defaultUserIcon" class="fas fa-user text-2xl"></i>
+                                <i class="fas fa-chevron-down text-sm"></i>
                             </button>
                             
                             <!-- User Dropdown Menu -->
-                            <div id="userDropdown" class="absolute right-0 top-full mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 hidden z-50">
+                            <div id="userDropdown" class="absolute right-0 top-full mt-3 w-72 bg-dark-800 border-2 border-neon-cyan shadow-neon-cyan hidden z-50">
                                 <!-- Not logged in state -->
-                                <div id="notLoggedInState" class="p-4">
-                                    <div class="text-center mb-4">
-                                        <i class="fas fa-user-circle text-4xl text-gray-400 mb-2"></i>
-                                        <p class="text-sm text-gray-600">${t('Sign in to your account')}</p>
+                                <div id="notLoggedInState" class="p-6">
+                                    <div class="text-center mb-6">
+                                        <i class="fas fa-user-circle text-5xl neon-text-pink mb-3"></i>
+                                        <p class="text-sm neon-text-cyan font-retro uppercase tracking-wider">${t('SYSTEM LOGIN REQUIRED')}</p>
                                     </div>
                                     
                                     <!-- Google Sign In Button -->
@@ -221,7 +405,7 @@ app.get('*', (c) => {
                                          data-auto_prompt="false">
                                     </div>
                                     
-                                    <div class="g_id_signin mb-3"
+                                    <div class="g_id_signin mb-4"
                                          data-type="standard"
                                          data-shape="rectangular"
                                          data-theme="outline"
@@ -230,55 +414,55 @@ app.get('*', (c) => {
                                          data-logo_alignment="left">
                                     </div>
                                     
-                                    <div class="text-center text-sm text-gray-500 mb-3">${t('or')}</div>
+                                    <div class="text-center text-xs neon-text-green mb-4 font-retro">${t('// OR //')}</div>
                                     
                                     <!-- Quick Login for Demo -->
-                                    <button id="demoLoginBtn" class="w-full btn-primary text-sm py-2 mb-2">
+                                    <button id="demoLoginBtn" class="w-full btn-neon text-xs py-3 mb-3">
                                         <i class="fas fa-user-check mr-2"></i>
-                                        ${t('Quick Demo Login')}
+                                        ${t('QUICK ACCESS')}
                                     </button>
                                     
                                     <div class="flex space-x-2">
-                                        <button id="showLoginForm" class="flex-1 btn-secondary text-xs py-1">
-                                            ${t('Sign In')}
+                                        <button id="showLoginForm" class="flex-1 btn-neon text-xs py-2">
+                                            ${t('LOGIN')}
                                         </button>
-                                        <button id="showRegisterForm" class="flex-1 btn-secondary text-xs py-1">
-                                            ${t('Register')}
+                                        <button id="showRegisterForm" class="flex-1 btn-neon text-xs py-2">
+                                            ${t('REGISTER')}
                                         </button>
                                     </div>
                                 </div>
                                 
                                 <!-- Logged in state -->
                                 <div id="loggedInState" class="hidden">
-                                    <div class="px-4 py-3 border-b border-gray-200">
-                                        <div class="flex items-center space-x-3">
-                                            <div id="loggedInAvatar" class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
-                                                <i class="fas fa-user text-primary-600"></i>
+                                    <div class="px-6 py-4 border-b-2 border-neon-cyan">
+                                        <div class="flex items-center space-x-4">
+                                            <div id="loggedInAvatar" class="w-12 h-12 border-2 border-neon-pink bg-dark-700 flex items-center justify-center">
+                                                <i class="fas fa-user neon-text-pink"></i>
                                             </div>
                                             <div>
-                                                <div id="userName" class="font-medium text-gray-900">User Name</div>
-                                                <div id="userEmail" class="text-sm text-gray-600">user@example.com</div>
+                                                <div id="userName" class="font-retro font-bold neon-text-cyan">User Name</div>
+                                                <div id="userEmail" class="text-xs neon-text-green font-mono">user@example.com</div>
                                             </div>
                                         </div>
                                     </div>
                                     
-                                    <div class="py-2">
-                                        <button id="profileBtn" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
-                                            <i class="fas fa-user-cog mr-3 w-4"></i>
-                                            ${t('Account Settings')}
+                                    <div class="py-3">
+                                        <button id="profileBtn" class="w-full text-left px-6 py-3 text-sm neon-text-cyan hover:bg-dark-700 hover:neon-text-pink flex items-center transition-all duration-300 font-retro">
+                                            <i class="fas fa-user-cog mr-4 w-4"></i>
+                                            ${t('ACCOUNT SETTINGS')}
                                         </button>
-                                        <button onclick="app.navigateTo('/orders')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
-                                            <i class="fas fa-box mr-3 w-4"></i>
-                                            ${t('My Orders')}
+                                        <button onclick="app.navigateTo('/orders')" class="w-full text-left px-6 py-3 text-sm neon-text-cyan hover:bg-dark-700 hover:neon-text-pink flex items-center transition-all duration-300 font-retro">
+                                            <i class="fas fa-box mr-4 w-4"></i>
+                                            ${t('MY ORDERS')}
                                         </button>
-                                        <button id="wishlistBtn" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
-                                            <i class="fas fa-heart mr-3 w-4"></i>
-                                            ${t('Wishlist')}
+                                        <button id="wishlistBtn" class="w-full text-left px-6 py-3 text-sm neon-text-cyan hover:bg-dark-700 hover:neon-text-pink flex items-center transition-all duration-300 font-retro">
+                                            <i class="fas fa-heart mr-4 w-4"></i>
+                                            ${t('WISHLIST')}
                                         </button>
-                                        <div class="border-t border-gray-200 my-2"></div>
-                                        <button id="logoutBtn" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center">
-                                            <i class="fas fa-sign-out-alt mr-3 w-4"></i>
-                                            ${t('Sign Out')}
+                                        <div class="border-t-2 border-neon-cyan my-2 mx-6"></div>
+                                        <button id="logoutBtn" class="w-full text-left px-6 py-3 text-sm neon-text-green hover:bg-dark-700 hover:neon-text-pink flex items-center transition-all duration-300 font-retro">
+                                            <i class="fas fa-sign-out-alt mr-4 w-4"></i>
+                                            ${t('SIGN OUT')}
                                         </button>
                                     </div>
                                 </div>
@@ -290,56 +474,62 @@ app.get('*', (c) => {
         </nav>
         
         <!-- Main Content -->
-        <main id="app" class="min-h-screen">
+        <main id="app" class="min-h-screen relative">
             <!-- Loading indicator -->
             <div id="loading" class="flex justify-center items-center py-20">
-                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+                <div class="retro-loader">
+                    <div class="neon-text-cyan font-retro text-lg animate-neon-pulse">LOADING SYSTEM...</div>
+                    <div class="mt-4 w-32 h-2 bg-dark-700 border-2 border-neon-cyan">
+                        <div class="h-full bg-gradient-to-r from-neon-cyan to-neon-pink animate-pulse"></div>
+                    </div>
+                </div>
             </div>
         </main>
         
         <!-- Footer -->
-        <footer class="bg-gray-800 text-white py-12 mt-16">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <footer class="bg-dark-900 border-t-2 border-neon-cyan py-16 mt-20 relative">
+            <div class="absolute inset-0 bg-gradient-to-b from-transparent to-dark-800 opacity-50"></div>
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                     <div>
-                        <h3 class="text-lg font-semibold mb-4">PC Parts Shop</h3>
-                        <p class="text-gray-300">${t('Your trusted source for high-performance PC components.')}</p>
+                        <h3 class="text-xl font-retro font-bold neon-text-cyan mb-6">RETRO TECH</h3>
+                        <p class="text-neon-green text-sm font-tech">${t('Your gateway to high-performance retro computing components.')}</p>
                     </div>
                     <div>
-                        <h4 class="text-md font-semibold mb-4">${t('Categories')}</h4>
-                        <ul class="space-y-2 text-gray-300">
-                            <li><a href="#" class="hover:text-white">${t('Processors')}</a></li>
-                            <li><a href="#" class="hover:text-white">${t('Graphics Cards')}</a></li>
-                            <li><a href="#" class="hover:text-white">${t('Motherboards')}</a></li>
-                            <li><a href="#" class="hover:text-white">${t('Memory')}</a></li>
+                        <h4 class="text-md font-retro font-bold neon-text-pink mb-6">${t('CATEGORIES')}</h4>
+                        <ul class="space-y-3 text-neon-cyan font-tech text-sm">
+                            <li><a href="#" class="hover:neon-text-pink transition-all duration-300">${t('>> Processors')}</a></li>
+                            <li><a href="#" class="hover:neon-text-pink transition-all duration-300">${t('>> Graphics Cards')}</a></li>
+                            <li><a href="#" class="hover:neon-text-pink transition-all duration-300">${t('>> Motherboards')}</a></li>
+                            <li><a href="#" class="hover:neon-text-pink transition-all duration-300">${t('>> Memory')}</a></li>
                         </ul>
                     </div>
                     <div>
-                        <h4 class="text-md font-semibold mb-4">${t('Support')}</h4>
-                        <ul class="space-y-2 text-gray-300">
-                            <li><a href="#" class="hover:text-white">${t('Help Center')}</a></li>
-                            <li><a href="#" class="hover:text-white">${t('Returns')}</a></li>
-                            <li><a href="#" class="hover:text-white">${t('Shipping')}</a></li>
-                            <li><a href="#" class="hover:text-white">${t('Contact Us')}</a></li>
+                        <h4 class="text-md font-retro font-bold neon-text-pink mb-6">${t('SUPPORT')}</h4>
+                        <ul class="space-y-3 text-neon-cyan font-tech text-sm">
+                            <li><a href="#" class="hover:neon-text-pink transition-all duration-300">${t('>> Help Center')}</a></li>
+                            <li><a href="#" class="hover:neon-text-pink transition-all duration-300">${t('>> Returns')}</a></li>
+                            <li><a href="#" class="hover:neon-text-pink transition-all duration-300">${t('>> Shipping')}</a></li>
+                            <li><a href="#" class="hover:neon-text-pink transition-all duration-300">${t('>> Contact Us')}</a></li>
                         </ul>
                     </div>
                     <div>
-                        <h4 class="text-md font-semibold mb-4">${t('Follow Us')}</h4>
-                        <div class="flex space-x-4">
-                            <a href="#" class="text-gray-300 hover:text-white">
-                                <i class="fab fa-facebook text-xl"></i>
+                        <h4 class="text-md font-retro font-bold neon-text-pink mb-6">${t('CONNECT')}</h4>
+                        <div class="flex space-x-6">
+                            <a href="#" class="neon-text-cyan hover:neon-text-pink transition-all duration-300 transform hover:scale-110">
+                                <i class="fab fa-facebook text-2xl"></i>
                             </a>
-                            <a href="#" class="text-gray-300 hover:text-white">
-                                <i class="fab fa-twitter text-xl"></i>
+                            <a href="#" class="neon-text-cyan hover:neon-text-pink transition-all duration-300 transform hover:scale-110">
+                                <i class="fab fa-twitter text-2xl"></i>
                             </a>
-                            <a href="#" class="text-gray-300 hover:text-white">
-                                <i class="fab fa-instagram text-xl"></i>
+                            <a href="#" class="neon-text-cyan hover:neon-text-pink transition-all duration-300 transform hover:scale-110">
+                                <i class="fab fa-instagram text-2xl"></i>
                             </a>
                         </div>
                     </div>
                 </div>
-                <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-                    <p>&copy; 2024 PC Parts Shop. ${t('All rights reserved.')})</p>
+                <div class="border-t-2 border-neon-cyan mt-12 pt-8 text-center">
+                    <p class="font-retro text-sm neon-text-green">© 2024 RETRO TECH SYSTEMS. ${t('ALL RIGHTS RESERVED.')} // POWERED BY NEON TECHNOLOGY</p>
                 </div>
             </div>
         </footer>

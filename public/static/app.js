@@ -168,53 +168,99 @@ class PCPartsShop {
   async showHomePage() {
     const app = document.getElementById('app');
     app.innerHTML = `
-      <!-- Hero Section -->
-      <section class="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 class="text-4xl md:text-6xl font-bold mb-6">
-            ${this.t('Build Your Dream PC')}
-          </h1>
-          <p class="text-xl mb-8 max-w-2xl mx-auto">
-            ${this.t('High-performance components from trusted brands. Professional quality, competitive prices.')}
-          </p>
-          <div class="flex flex-col sm:flex-row gap-4 justify-center">
-            <button onclick="app.showProductsPage()" class="btn btn-lg bg-white text-blue-600 hover:bg-gray-100">
-              <i class="fas fa-rocket mr-2"></i>
-              ${this.t('Shop Now')}
-            </button>
-            <button onclick="app.showCategoriesPage()" class="btn btn-lg bg-transparent border-2 border-white text-white hover:bg-white hover:text-blue-600">
-              <i class="fas fa-th-large mr-2"></i>
-              ${this.t('Browse Categories')}
+      <!-- Retro Hero Section -->
+      <section class="relative py-32 overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-dark-900 via-dark-800 to-dark-700"></div>
+        <div class="absolute inset-0 retro-grid opacity-30"></div>
+        
+        <!-- Animated Background Elements -->
+        <div class="absolute top-20 left-20 w-32 h-32 border-4 border-neon-cyan animate-pulse opacity-20"></div>
+        <div class="absolute bottom-20 right-20 w-24 h-24 border-4 border-neon-pink animate-pulse opacity-20"></div>
+        <div class="absolute top-1/2 left-1/4 w-16 h-16 border-4 border-neon-green animate-pulse opacity-20"></div>
+        
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
+          <div class="animate-retro-slide">
+            <h1 class="text-5xl md:text-7xl font-retro font-black neon-text-cyan mb-8 animate-neon-pulse">
+              <span class="block">RETRO</span>
+              <span class="block neon-text-pink">COMPUTING</span>
+            </h1>
+            <p class="text-xl md:text-2xl neon-text-green font-tech mb-12 max-w-3xl mx-auto uppercase tracking-widest">
+              ${this.t('// High-performance components from the future of the past //')}
+            </p>
+            <div class="flex flex-col sm:flex-row gap-6 justify-center">
+              <button onclick="app.showProductsPage()" class="btn-neon text-lg px-8 py-4">
+                <i class="fas fa-rocket mr-3"></i>
+                ${this.t('ENTER SYSTEM')}
+              </button>
+              <button onclick="app.showCategoriesPage()" class="btn-neon text-lg px-8 py-4">
+                <i class="fas fa-th-large mr-3"></i>
+                ${this.t('BROWSE MODULES')}
+              </button>
+            </div>
+          </div>
+          
+          <!-- Tech Stats Display -->
+          <div class="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="retro-card p-6 text-center">
+              <div class="neon-text-cyan text-4xl font-retro font-black mb-2">10K+</div>
+              <div class="neon-text-pink text-sm font-tech uppercase tracking-wider">${this.t('Components Available')}</div>
+            </div>
+            <div class="retro-card p-6 text-center">
+              <div class="neon-text-green text-4xl font-retro font-black mb-2">99.9%</div>
+              <div class="neon-text-pink text-sm font-tech uppercase tracking-wider">${this.t('System Reliability')}</div>
+            </div>
+            <div class="retro-card p-6 text-center">
+              <div class="neon-text-pink text-4xl font-retro font-black mb-2">24/7</div>
+              <div class="neon-text-cyan text-sm font-tech uppercase tracking-wider">${this.t('Network Access')}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Component Categories -->
+      <section class="py-24 relative">
+        <div class="absolute inset-0 bg-gradient-to-b from-dark-800 to-dark-900"></div>
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
+          <div class="text-center mb-16">
+            <h2 class="text-4xl md:text-5xl font-retro font-black neon-text-pink mb-6">
+              SYSTEM MODULES
+            </h2>
+            <p class="neon-text-cyan font-tech text-lg uppercase tracking-wider">
+              ${this.t('// Select your hardware configuration //')}
+            </p>
+          </div>
+          <div id="categoriesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            ${this.renderLoadingSkeleton(8, 'retro-category')}
+          </div>
+          <div class="text-center mt-12">
+            <button onclick="app.showCategoriesPage()" class="btn-neon text-lg px-8 py-4">
+              <i class="fas fa-database mr-3"></i>
+              ${this.t('ACCESS FULL DATABASE')}
             </button>
           </div>
         </div>
       </section>
 
-      <!-- Featured Categories -->
-      <section class="py-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="text-center mb-12">
-            <h2 class="text-3xl font-bold mb-4">${this.t('Shop by Category')}</h2>
-            <p class="text-gray-600 mb-6">${this.t('Find the perfect components for your build')}</p>
+      <!-- Featured Hardware -->
+      <section class="py-24 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-dark-700 via-dark-800 to-dark-900"></div>
+        <div class="absolute inset-0 retro-grid opacity-20"></div>
+        
+        <!-- Floating Elements -->
+        <div class="absolute top-10 right-10 w-20 h-20 border-2 border-neon-green opacity-30 animate-pulse"></div>
+        <div class="absolute bottom-10 left-10 w-16 h-16 border-2 border-neon-pink opacity-30 animate-pulse"></div>
+        
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
+          <div class="text-center mb-16">
+            <h2 class="text-4xl md:text-5xl font-retro font-black neon-text-cyan mb-6">
+              FEATURED HARDWARE
+            </h2>
+            <p class="neon-text-green font-tech text-lg uppercase tracking-wider">
+              ${this.t('// Premium components for elite performance //')}
+            </p>
           </div>
-          <div id="categoriesGrid" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            ${this.renderLoadingSkeleton(8, 'category')}
-          </div>
-          <div class="text-center mt-8">
-            <button onclick="app.showCategoriesPage()" class="btn btn-outline">
-              <i class="fas fa-th-large mr-2"></i>
-              ${this.t('View All Categories')}
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <!-- Featured Products -->
-      <section class="py-16 bg-gray-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 class="text-3xl font-bold text-center mb-12">${this.t('Featured Products')}</h2>
-          <div id="featuredProducts" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            ${this.renderLoadingSkeleton(8, 'product')}
+          <div id="featuredProducts" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            ${this.renderLoadingSkeleton(8, 'retro-product')}
           </div>
         </div>
       </section>
@@ -585,72 +631,137 @@ class PCPartsShop {
     const grid = document.getElementById('categoriesGrid');
     if (!grid) return;
 
-    // Category icons mapping
+    // Retro 80s Category icons mapping
     const categoryIcons = {
-      'processors': 'fas fa-microchip',
-      'graphics-cards': 'fas fa-tv', 
-      'motherboards': 'fas fa-memory',
-      'memory': 'fas fa-hdd',
-      'storage': 'fas fa-save',
-      'power-supplies': 'fas fa-bolt',
-      'cases': 'fas fa-cube',
-      'cooling': 'fas fa-snowflake',
-      'peripherals': 'fas fa-keyboard'
+      'processors': 'fas fa-brain',           // Brain/CPU processing unit
+      'graphics-cards': 'fas fa-satellite-dish', // Satellite for graphics/display
+      'motherboards': 'fas fa-project-diagram',   // Circuit diagram
+      'memory': 'fas fa-memory',              // Memory chips
+      'storage': 'fas fa-database',           // Data storage
+      'power-supplies': 'fas fa-plug',        // Power connection
+      'cases': 'fas fa-desktop',              // Computer tower
+      'cooling': 'fas fa-fan',                // Cooling fan
+      'peripherals': 'fas fa-gamepad'         // Gaming/input devices
     };
 
-    // Category color themes
+    // Retro neon color themes
     const categoryColors = {
-      'processors': { bg: 'bg-blue-100', icon: 'text-blue-600', border: 'hover:border-blue-300' },
-      'graphics-cards': { bg: 'bg-green-100', icon: 'text-green-600', border: 'hover:border-green-300' },
-      'motherboards': { bg: 'bg-purple-100', icon: 'text-purple-600', border: 'hover:border-purple-300' },
-      'memory': { bg: 'bg-orange-100', icon: 'text-orange-600', border: 'hover:border-orange-300' },
-      'storage': { bg: 'bg-indigo-100', icon: 'text-indigo-600', border: 'hover:border-indigo-300' },
-      'power-supplies': { bg: 'bg-yellow-100', icon: 'text-yellow-600', border: 'hover:border-yellow-300' },
-      'cases': { bg: 'bg-gray-100', icon: 'text-gray-600', border: 'hover:border-gray-300' },
-      'cooling': { bg: 'bg-cyan-100', icon: 'text-cyan-600', border: 'hover:border-cyan-300' },
-      'peripherals': { bg: 'bg-pink-100', icon: 'text-pink-600', border: 'hover:border-pink-300' }
+      'processors': { 
+        bg: 'bg-dark-700', 
+        icon: 'neon-text-cyan', 
+        border: 'border-neon-cyan hover:border-neon-pink',
+        glow: 'shadow-neon-cyan hover:shadow-neon-pink'
+      },
+      'graphics-cards': { 
+        bg: 'bg-dark-700', 
+        icon: 'neon-text-pink', 
+        border: 'border-neon-pink hover:border-neon-green',
+        glow: 'shadow-neon-pink hover:shadow-neon-green'
+      },
+      'motherboards': { 
+        bg: 'bg-dark-700', 
+        icon: 'neon-text-cyan', 
+        border: 'border-neon-cyan hover:border-neon-purple',
+        glow: 'shadow-neon-cyan hover:shadow-neon-purple'
+      },
+      'memory': { 
+        bg: 'bg-dark-700', 
+        icon: 'neon-text-green', 
+        border: 'border-neon-green hover:border-neon-pink',
+        glow: 'shadow-neon-green hover:shadow-neon-pink'
+      },
+      'storage': { 
+        bg: 'bg-dark-700', 
+        icon: 'neon-text-cyan', 
+        border: 'border-neon-cyan hover:border-neon-purple',
+        glow: 'shadow-neon-cyan hover:shadow-neon-purple'
+      },
+      'power-supplies': { 
+        bg: 'bg-dark-700', 
+        icon: 'neon-text-pink', 
+        border: 'border-neon-pink hover:border-neon-green',
+        glow: 'shadow-neon-pink hover:shadow-neon-green'
+      },
+      'cases': { 
+        bg: 'bg-dark-700', 
+        icon: 'neon-text-pink', 
+        border: 'border-neon-pink hover:border-neon-green',
+        glow: 'shadow-neon-pink hover:shadow-neon-green'
+      },
+      'cooling': { 
+        bg: 'bg-dark-700', 
+        icon: 'neon-text-cyan', 
+        border: 'border-neon-cyan hover:border-neon-pink',
+        glow: 'shadow-neon-cyan hover:shadow-neon-pink'
+      },
+      'peripherals': { 
+        bg: 'bg-dark-700', 
+        icon: 'neon-text-green', 
+        border: 'border-neon-green hover:border-neon-purple',
+        glow: 'shadow-neon-green hover:shadow-neon-purple'
+      }
     };
 
     grid.innerHTML = categories.map(category => {
       const name = this.config.lang === 'jp' ? category.name_jp : category.name_en;
       const description = this.config.lang === 'jp' ? category.description_jp : category.description_en;
       const icon = categoryIcons[category.slug] || 'fas fa-microchip';
-      const colors = categoryColors[category.slug] || { bg: 'bg-blue-100', icon: 'text-blue-600', border: 'hover:border-blue-300' };
+      const colors = categoryColors[category.slug] || { 
+        bg: 'bg-dark-700', 
+        icon: 'neon-text-cyan', 
+        border: 'border-neon-cyan',
+        glow: 'shadow-neon-cyan'
+      };
       
       return `
-        <div class="category-card group cursor-pointer transform transition-all duration-300 hover:scale-105" 
+        <div class="retro-card group cursor-pointer transform transition-all duration-500 hover:scale-105 animate-retro-slide" 
              onclick="app.navigateToCategory('${category.slug}')">
-          <!-- Card Container -->
-          <div class="material-card p-6 text-center h-full border-2 border-transparent ${colors.border} hover:shadow-xl">
+          
+          <!-- Retro Card Container -->
+          <div class="relative p-8 text-center h-full border-2 ${colors.border} ${colors.glow} overflow-hidden">
+            
+            <!-- Animated Background Grid -->
+            <div class="absolute inset-0 retro-grid opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>
+            
+            <!-- Glowing Corner Accents -->
+            <div class="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 ${colors.border} opacity-60"></div>
+            <div class="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 ${colors.border} opacity-60"></div>
+            <div class="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 ${colors.border} opacity-60"></div>
+            <div class="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 ${colors.border} opacity-60"></div>
             
             <!-- Icon Section -->
-            <div class="w-20 h-20 mx-auto mb-4 ${colors.bg} rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <i class="${icon} text-3xl ${colors.icon}"></i>
+            <div class="relative z-10 w-24 h-24 mx-auto mb-6 ${colors.bg} border-2 ${colors.border} flex items-center justify-center group-hover:scale-110 transition-all duration-500 group-hover:animate-pulse">
+              <i class="${icon} text-4xl ${colors.icon} group-hover:animate-pulse"></i>
+              <!-- Icon Glow Effect -->
+              <div class="absolute inset-0 ${colors.bg} opacity-20 blur-sm group-hover:opacity-40 transition-opacity duration-500"></div>
             </div>
             
             <!-- Title -->
-            <h3 class="font-bold text-lg mb-2 text-gray-800 group-hover:text-blue-600 transition-colors duration-200">
+            <h3 class="font-retro font-black text-xl mb-3 neon-text-cyan group-hover:neon-text-pink transition-all duration-300 relative z-10 uppercase tracking-wider">
               ${name}
             </h3>
             
             <!-- Description -->
             ${description ? `
-              <p class="text-gray-600 text-sm mb-3 line-clamp-2 leading-relaxed">
+              <p class="neon-text-green text-sm mb-4 line-clamp-2 leading-relaxed font-tech opacity-80 group-hover:opacity-100 transition-opacity duration-300 relative z-10">
                 ${description}
               </p>
             ` : ''}
             
-            <!-- Product Count -->
-            <div class="flex items-center justify-center space-x-1 text-xs font-medium">
-              <i class="fas fa-cube text-gray-400"></i>
-              <span class="text-gray-600">
-                ${category.product_count || 0} ${this.t('products')}
+            <!-- Product Count with Retro Styling -->
+            <div class="flex items-center justify-center space-x-2 text-xs font-retro font-bold relative z-10 mb-4">
+              <i class="fas fa-database ${colors.icon} animate-pulse"></i>
+              <span class="${colors.icon} group-hover:neon-text-pink transition-colors duration-300">
+                ${category.product_count || 0} ${this.t('MODULES')}
               </span>
             </div>
             
-            <!-- Hover Arrow -->
-            <div class="mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <i class="fas fa-arrow-right text-blue-500"></i>
+            <!-- Access Indicator -->
+            <div class="mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 relative z-10">
+              <div class="inline-flex items-center space-x-2 ${colors.icon} font-retro text-xs font-bold uppercase tracking-widest">
+                <span>${this.t('>> ACCESS')}</span>
+                <i class="fas fa-chevron-right animate-pulse"></i>
+              </div>
             </div>
             
           </div>
@@ -682,49 +793,51 @@ class PCPartsShop {
     const shortDesc = this.config.lang === 'jp' ? product.short_description_jp : product.short_description_en;
     
     return `
-      <div class="product-card relative">
-        ${product.is_featured ? '<span class="product-badge badge-featured">Featured</span>' : ''}
-        ${product.compare_price ? '<span class="product-badge badge-sale top-2 right-2">Sale</span>' : ''}
+      <div class="retro-card relative group animate-retro-slide">
+        ${product.is_featured ? '<span class="absolute top-3 left-3 bg-neon-pink text-dark-900 font-retro text-xs font-bold px-2 py-1 z-10 animate-pulse">FEATURED</span>' : ''}
+        ${product.compare_price ? '<span class="absolute top-3 right-3 bg-neon-green text-dark-900 font-retro text-xs font-bold px-2 py-1 z-10 animate-pulse">SALE</span>' : ''}
         
-        <div class="relative cursor-pointer" onclick="app.navigateToProduct(${product.id})">
+        <div class="relative cursor-pointer overflow-hidden" onclick="app.navigateToProduct(${product.id})">
           <img src="${product.primary_image || '/static/placeholder-product.jpg'}" 
                alt="${name}" 
-               class="product-image">
+               class="w-full h-64 object-cover transition-all duration-500 group-hover:scale-110 filter group-hover:brightness-110">
+          <div class="absolute inset-0 bg-gradient-to-t from-dark-900 via-transparent to-transparent opacity-60"></div>
+          <div class="absolute inset-0 retro-grid opacity-20 group-hover:opacity-40 transition-opacity duration-300"></div>
         </div>
         
-        <div class="p-4">
-          <div class="mb-2">
-            <h3 class="font-semibold text-lg leading-tight hover:text-blue-600 cursor-pointer" 
-                onclick="app.navigateToProduct(${product.id})"
+        <div class="p-6">
+          <div class="mb-4">
+            <h3 class="font-retro font-bold text-lg neon-text-cyan leading-tight hover:neon-text-pink cursor-pointer transition-all duration-300 transform group-hover:scale-105" 
+                onclick="app.navigateToProduct(${product.id})">
               ${name}
             </h3>
-            ${product.brand_name ? `<p class="text-sm text-gray-600">${product.brand_name}</p>` : ''}
+            ${product.brand_name ? `<p class="text-sm neon-text-green font-tech mt-1">${product.brand_name}</p>` : ''}
           </div>
           
-          ${shortDesc ? `<p class="text-sm text-gray-700 mb-3 line-clamp-2">${shortDesc}</p>` : ''}
+          ${shortDesc ? `<p class="text-sm text-neon-cyan font-tech mb-4 line-clamp-2 opacity-80">${shortDesc}</p>` : ''}
           
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center space-x-2">
-              <span class="text-lg font-bold text-gray-900">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center space-x-3">
+              <span class="text-xl font-retro font-black neon-text-pink">
                 ${this.formatPrice(product.price)}
               </span>
               ${product.compare_price ? `
-                <span class="text-sm text-gray-500 line-through">
+                <span class="text-sm neon-text-cyan line-through opacity-60 font-tech">
                   ${this.formatPrice(product.compare_price)}
                 </span>
               ` : ''}
             </div>
             
-            <span class="text-xs ${product.inventory_quantity > 0 ? 'text-green-600' : 'text-red-600'}">
-              ${product.inventory_quantity > 0 ? this.t('In Stock') : this.t('Out of Stock')}
+            <span class="text-xs font-retro font-bold px-2 py-1 ${product.inventory_quantity > 0 ? 'neon-text-green bg-green-900 bg-opacity-20' : 'neon-text-pink bg-red-900 bg-opacity-20'}">
+              ${product.inventory_quantity > 0 ? this.t('ONLINE') : this.t('OFFLINE')}
             </span>
           </div>
           
           <button onclick="app.addToCart(${product.id})" 
-                  class="btn btn-primary w-full btn-sm" 
+                  class="btn-neon w-full py-3" 
                   ${product.inventory_quantity === 0 ? 'disabled' : ''}>
-            <i class="fas fa-shopping-cart mr-2"></i>
-            ${this.t('Add to Cart')}
+            <i class="fas fa-plus mr-2"></i>
+            ${this.t('ADD TO SYSTEM')}
           </button>
         </div>
       </div>
@@ -1668,7 +1781,20 @@ class PCPartsShop {
         'admin.revenue.current': 'Current',
         'admin.revenue.previous': 'Previous',
         'admin.avgOrderValue': 'Avg Order Value',
-        'admin.stock': 'Stock'
+        'admin.stock': 'Stock',
+        
+        // Retro 80s Theme Translations
+        'ENTER SYSTEM': 'ENTER SYSTEM',
+        'BROWSE MODULES': 'BROWSE MODULES',
+        'ACCESS FULL DATABASE': 'ACCESS FULL DATABASE',
+        'MODULES': 'MODULES',
+        '>> ACCESS': '>> ACCESS',
+        '// High-performance components from the future of the past //': '// High-performance components from the future of the past //',
+        '// Select your hardware configuration //': '// Select your hardware configuration //',
+        '// Premium components for elite performance //': '// Premium components for elite performance //',
+        'Components Available': 'Components Available',
+        'System Reliability': 'System Reliability',
+        'Network Access': 'Network Access'
       },
       jp: {
         // Navigation
@@ -1890,7 +2016,20 @@ class PCPartsShop {
         'admin.revenue.current': '今月',
         'admin.revenue.previous': '前月',
         'admin.avgOrderValue': '平均注文金額',
-        'admin.stock': '在庫'
+        'admin.stock': '在庫',
+        
+        // Retro 80s Theme Translations
+        'ENTER SYSTEM': 'システム開始',
+        'BROWSE MODULES': 'モジュール参照',
+        'ACCESS FULL DATABASE': 'データベース接続',
+        'MODULES': 'モジュール',
+        '>> ACCESS': '>> アクセス',
+        '// High-performance components from the future of the past //': '// 過去の未来からの高性能コンポーネント //',
+        '// Select your hardware configuration //': '// ハードウェア構成を選択してください //',
+        '// Premium components for elite performance //': '// エリート性能のプレミアムコンポーネント //',
+        'Components Available': 'コンポーネント数',
+        'System Reliability': 'システム信頼性',
+        'Network Access': 'ネットワークアクセス'
       }
     };
   }
@@ -1982,12 +2121,37 @@ class PCPartsShop {
           </div>
         `;
         break;
+      case 'retro-product':
+        template = `
+          <div class="retro-card p-6 animate-pulse">
+            <div class="w-full h-64 bg-dark-600 mb-4 relative overflow-hidden">
+              <div class="absolute inset-0 retro-grid opacity-20"></div>
+              <div class="absolute inset-0 bg-gradient-to-br from-neon-cyan/20 to-neon-pink/20"></div>
+            </div>
+            <div class="h-6 bg-neon-cyan/30 mb-2 w-3/4"></div>
+            <div class="h-4 bg-neon-green/20 mb-4 w-1/2"></div>
+            <div class="h-4 bg-neon-pink/30 w-20 mb-4"></div>
+            <div class="h-10 bg-dark-600 border-2 border-neon-cyan/50"></div>
+          </div>
+        `;
+        break;
       case 'category':
         template = `
           <div class="material-card p-6 text-center">
             <div class="w-16 h-16 skeleton rounded-full mx-auto mb-4"></div>
             <div class="skeleton-title mb-2"></div>
             <div class="skeleton-text w-16 mx-auto"></div>
+          </div>
+        `;
+        break;
+      case 'retro-category':
+        template = `
+          <div class="retro-card p-8 text-center animate-pulse">
+            <div class="w-20 h-20 border-4 border-neon-cyan/50 mx-auto mb-6 relative">
+              <div class="absolute inset-2 bg-neon-pink/20"></div>
+            </div>
+            <div class="h-6 bg-neon-cyan/30 mb-3 mx-auto w-2/3"></div>
+            <div class="h-4 bg-neon-green/20 mx-auto w-1/2"></div>
           </div>
         `;
         break;
