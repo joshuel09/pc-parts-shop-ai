@@ -159,7 +159,8 @@ app.get('*', (c) => {
                 animation: {
                   'neon-pulse': 'neon-pulse 2s ease-in-out infinite alternate',
                   'retro-slide': 'retro-slide 0.5s ease-out',
-                  'glitch': 'glitch 2s infinite'
+                  'glitch': 'glitch 2s infinite',
+                  'scroll': 'scroll 30s linear infinite'
                 }
               }
             }
@@ -199,12 +200,30 @@ app.get('*', (c) => {
             100% { background-position: 0% 50%; }
           }
           
-          /* Grid Pattern Overlay */
+          /* Animated Grid Pattern Overlay - Only for Landing Page */
+          .retro-grid-landing {
+            background-image: 
+              linear-gradient(rgba(0,255,255,0.3) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(0,255,255,0.3) 1px, transparent 1px);
+            background-size: 40px 40px;
+            animation: gridMove 8s linear infinite;
+          }
+          
+          @keyframes gridMove {
+            0% {
+              background-position: 0px 0px, 0px 0px;
+            }
+            100% {
+              background-position: 40px 40px, 40px 40px;
+            }
+          }
+          
+          /* Static Grid for Other Elements */
           .retro-grid {
             background-image: 
-              linear-gradient(rgba(0,255,255,0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(0,255,255,0.1) 1px, transparent 1px);
-            background-size: 50px 50px;
+              linear-gradient(rgba(0,255,255,0.15) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(0,255,255,0.15) 1px, transparent 1px);
+            background-size: 40px 40px;
           }
           
           /* Neon Text Effects */
@@ -315,6 +334,16 @@ app.get('*', (c) => {
             100% { background-position: 0 4px; }
           }
           
+          /* Logo Carousel Animation */
+          @keyframes scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+          }
+          
+          .logo-carousel:hover {
+            animation-play-state: paused;
+          }
+          
           /* Compatibility - Keep existing classes for admin/other pages */
           .material-card {
             @apply bg-white rounded-lg shadow-material transition-all duration-200 hover:shadow-material-lg;
@@ -330,6 +359,53 @@ app.get('*', (c) => {
           
           .input-field {
             @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200;
+          }
+          
+          /* Form Styling */
+          .form-input {
+            display: block;
+            padding: 10px 12px;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            color: #374151;
+            font-size: 14px;
+            line-height: 1.5;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+          }
+          
+          .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          }
+          
+          .form-input::placeholder {
+            color: #9ca3af;
+          }
+          
+          .form-label {
+            display: block;
+            margin-bottom: 6px;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
+          }
+          
+          /* Textarea styling */
+          textarea.form-input {
+            min-height: 80px;
+            resize: vertical;
+            font-family: inherit;
+          }
+          
+          /* Retro Radio Buttons and Checkboxes */
+          input[type="radio"], input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #00ffff;
+            cursor: pointer;
           }
         </style>
     </head>

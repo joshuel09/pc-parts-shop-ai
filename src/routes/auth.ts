@@ -47,12 +47,12 @@ auth.post('/register', async (c) => {
       password_hash: passwordHash,
       first_name: firstName,
       last_name: lastName,
-      phone,
+      phone: phone || null,
       role: 'customer',
       is_active: true,
       email_verified: false,
       language_preference: languagePreference,
-      last_login_at: undefined
+      last_login_at: null
     };
 
     const userId = await db.createUser(userData);
@@ -222,7 +222,7 @@ auth.post('/google', async (c) => {
         is_active: true,
         email_verified: true, // Google accounts are pre-verified
         language_preference: 'en',
-        last_login_at: undefined
+        last_login_at: null
       };
 
       const userId = await db.createUser(userData);

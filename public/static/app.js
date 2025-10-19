@@ -156,6 +156,10 @@ class PCPartsShop {
         await this.showOrderDetailsPage(orderId);
       } else if (path === '/orders') {
         await this.showOrdersPage();
+      } else if (path === '/login') {
+        this.showLoginPage();
+      } else if (path === '/register') {
+        this.showRegisterPage();
       } else {
         await this.showHomePage();
       }
@@ -165,13 +169,32 @@ class PCPartsShop {
     this.scrollToTopAfterRender();
   }
 
+  // Control animated grid - only show on landing page
+  setAnimatedGrid(show = false) {
+    const body = document.body;
+    console.log('Setting animated grid:', show);
+    if (show) {
+      body.classList.remove('retro-grid');
+      body.classList.add('retro-grid-landing');
+      console.log('Added retro-grid-landing class');
+    } else {
+      body.classList.remove('retro-grid-landing');  
+      body.classList.add('retro-grid');
+      console.log('Added retro-grid class');
+    }
+    console.log('Body classes:', body.className);
+  }
+
   async showHomePage() {
+    // Enable animated grid for landing page
+    this.setAnimatedGrid(true);
+    
     const app = document.getElementById('app');
     app.innerHTML = `
       <!-- Retro Hero Section -->
       <section class="relative py-32 overflow-hidden">
         <div class="absolute inset-0 bg-gradient-to-br from-dark-900 via-dark-800 to-dark-700"></div>
-        <div class="absolute inset-0 retro-grid opacity-30"></div>
+        <div class="absolute inset-0 retro-grid-landing opacity-50"></div>
         
         <!-- Animated Background Elements -->
         <div class="absolute top-20 left-20 w-32 h-32 border-4 border-neon-cyan animate-pulse opacity-20"></div>
@@ -264,6 +287,45 @@ class PCPartsShop {
           </div>
         </div>
       </section>
+
+      <!-- Hardware Partners Carousel -->
+      <section class="py-16 relative bg-white">
+        <div class="absolute inset-0 bg-white"></div>
+        <div class="absolute inset-0 opacity-5" style="background-image: linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px); background-size: 20px 20px;"></div>
+        
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
+          <div class="text-center mb-12">
+            <h2 class="text-3xl md:text-4xl font-retro font-black text-gray-800 mb-4">
+              FEATURED HARDWARE PARTNERS
+            </h2>
+            <p class="text-gray-600 font-tech text-lg uppercase tracking-wider">
+              ${this.t('// Trusted brands powering the future //')}
+            </p>
+          </div>
+          
+          <!-- Moving Logo Carousel -->
+          <div class="overflow-hidden py-8">
+            <div class="logo-carousel flex items-center space-x-12 animate-scroll">
+              <!-- First set of logos -->
+              <div class="flex items-center space-x-12 min-w-max">
+                <img src="https://page.gensparksite.com/v1/base64_upload/434fdfc416f5bf626d3b4a9498f1b968" alt="Partner Logo 1" class="h-16 w-auto">
+                <img src="https://page.gensparksite.com/v1/base64_upload/b900442acdb55b01becc9c04c86b1319" alt="Partner Logo 2" class="h-16 w-auto">
+                <img src="https://page.gensparksite.com/v1/base64_upload/e631e273399434719ab706d23d66c5f2" alt="Partner Logo 3" class="h-16 w-auto">
+                <img src="https://page.gensparksite.com/v1/base64_upload/5561fd21553dbf1e5005109c36914d1b" alt="Partner Logo 4" class="h-16 w-auto">
+                <img src="https://page.gensparksite.com/v1/base64_upload/84e2ea7bbecc739ee8ba8c8eef6d8f5d" alt="Partner Logo 5" class="h-16 w-auto">
+              </div>
+              <!-- Duplicate set for seamless loop -->
+              <div class="flex items-center space-x-12 min-w-max">
+                <img src="https://page.gensparksite.com/v1/base64_upload/434fdfc416f5bf626d3b4a9498f1b968" alt="Partner Logo 1" class="h-16 w-auto">
+                <img src="https://page.gensparksite.com/v1/base64_upload/b900442acdb55b01becc9c04c86b1319" alt="Partner Logo 2" class="h-16 w-auto">
+                <img src="https://page.gensparksite.com/v1/base64_upload/e631e273399434719ab706d23d66c5f2" alt="Partner Logo 3" class="h-16 w-auto">
+                <img src="https://page.gensparksite.com/v1/base64_upload/5561fd21553dbf1e5005109c36914d1b" alt="Partner Logo 4" class="h-16 w-auto">
+                <img src="https://page.gensparksite.com/v1/base64_upload/84e2ea7bbecc739ee8ba8c8eef6d8f5d" alt="Partner Logo 5" class="h-16 w-auto">
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     `;
 
     // Load data
@@ -274,6 +336,9 @@ class PCPartsShop {
   }
 
   async showProductsPage(params = new URLSearchParams()) {
+    // Disable animated grid for other pages
+    this.setAnimatedGrid(false);
+    
     const app = document.getElementById('app');
     
     app.innerHTML = `
@@ -283,31 +348,32 @@ class PCPartsShop {
           <h1 class="text-3xl font-bold text-gray-900 mb-4">${this.t('All Products')}</h1>
           
           <!-- Filters and Sort -->
-          <div class="flex flex-col md:flex-row md:items-center md:justify-between bg-white rounded-lg shadow-sm p-4">
-            <div class="flex flex-wrap items-center space-x-4 mb-4 md:mb-0">
-              <!-- Category Filter -->
-              <select id="categoryFilter" class="form-input">
-                <option value="">${this.t('All Categories')}</option>
-              </select>
-              
-              <!-- Brand Filter -->
-              <select id="brandFilter" class="form-input">
-                <option value="">${this.t('All Brands')}</option>
-              </select>
-              
-              <!-- Price Range -->
-              <div class="flex items-center space-x-2">
-                <input type="number" id="minPrice" placeholder="${this.t('Min Price')}" class="form-input w-24">
-                <span>-</span>
-                <input type="number" id="maxPrice" placeholder="${this.t('Max Price')}" class="form-input w-24">
+          <div class="bg-gray-100 rounded-lg shadow-sm p-4 mb-6">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0 md:space-x-4">
+              <div class="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                <!-- Category Filter -->
+                <select id="categoryFilter" class="form-input">
+                  <option value="">${this.t('All Categories')}</option>
+                </select>
+                
+                <!-- Brand Filter -->
+                <select id="brandFilter" class="form-input">
+                  <option value="">${this.t('All Brands')}</option>
+                </select>
+                
+                <!-- Price Range -->
+                <div class="flex items-center space-x-2">
+                  <input type="number" id="minPrice" placeholder="${this.t('Min Price')}" class="form-input w-24">
+                  <span class="text-gray-500">-</span>
+                  <input type="number" id="maxPrice" placeholder="${this.t('Max Price')}" class="form-input w-24">
+                </div>
+                
+                <!-- Stock Filter -->
+                <label class="flex items-center whitespace-nowrap">
+                  <input type="checkbox" id="inStockOnly" class="mr-2">
+                  <span class="text-sm text-gray-700">${this.t('In Stock Only')}</span>
+                </label>
               </div>
-              
-              <!-- Stock Filter -->
-              <label class="flex items-center">
-                <input type="checkbox" id="inStockOnly" class="mr-2">
-                <span class="text-sm">${this.t('In Stock Only')}</span>
-              </label>
-            </div>
             
             <!-- Sort -->
             <div class="flex items-center space-x-2">
@@ -341,6 +407,9 @@ class PCPartsShop {
   }
 
   async showProductPage(productId) {
+    // Disable animated grid for other pages
+    this.setAnimatedGrid(false);
+    
     const app = document.getElementById('app');
     
     app.innerHTML = `
@@ -455,15 +524,15 @@ class PCPartsShop {
           <!-- Add to Cart -->
           <div class="flex space-x-4">
             <button onclick="app.addToCart(${product.id})" 
-                    class="btn btn-primary flex-1" 
+                    class="btn-neon flex-1 py-4 text-lg font-retro font-bold uppercase tracking-wider" 
                     ${product.inventory_quantity === 0 ? 'disabled' : ''}>
-              <i class="fas fa-shopping-cart mr-2"></i>
-              ${this.t('Add to Cart')}
+              <i class="fas fa-plus mr-3"></i>
+              ${this.t('ADD TO SYSTEM')}
             </button>
             
-            <button class="btn btn-secondary">
-              <i class="fas fa-heart mr-2"></i>
-              ${this.t('Wishlist')}
+            <button class="btn-neon px-6 py-4 text-lg font-retro font-bold uppercase tracking-wider">
+              <i class="fas fa-star mr-3"></i>
+              ${this.t('WISHLIST')}
             </button>
           </div>
         </div>
@@ -483,6 +552,9 @@ class PCPartsShop {
   }
 
   async showCategoriesPage() {
+    // Disable animated grid for other pages
+    this.setAnimatedGrid(false);
+    
     const app = document.getElementById('app');
     
     app.innerHTML = `
@@ -962,6 +1034,9 @@ class PCPartsShop {
   }
 
   async showCartPage() {
+    // Disable animated grid for other pages
+    this.setAnimatedGrid(false);
+    
     const app = document.getElementById('app');
     
     // Ensure cart is loaded
@@ -1007,9 +1082,9 @@ class PCPartsShop {
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Cart Items -->
             <div class="lg:col-span-2">
-              <div class="bg-white rounded-lg shadow-sm">
-                <div class="p-6 border-b">
-                  <h2 class="text-lg font-semibold">${this.t('Cart Items')}</h2>
+              <div class="bg-gray-50 rounded-lg shadow-sm">
+                <div class="p-6 border-b border-gray-200">
+                  <h2 class="text-lg font-semibold text-gray-900">${this.t('Cart Items')}</h2>
                 </div>
                 <div class="p-6">
                   <div class="space-y-6">
@@ -1021,23 +1096,23 @@ class PCPartsShop {
 
             <!-- Order Summary -->
             <div class="lg:col-span-1">
-              <div class="bg-white rounded-lg shadow-sm sticky top-4">
-                <div class="p-6 border-b">
-                  <h2 class="text-lg font-semibold">${this.t('Order Summary')}</h2>
+              <div class="bg-gray-50 rounded-lg shadow-sm sticky top-4">
+                <div class="p-6 border-b border-gray-200">
+                  <h2 class="text-lg font-semibold text-gray-900">${this.t('Order Summary')}</h2>
                 </div>
                 <div class="p-6">
                   <div class="space-y-4">
                     <div class="flex justify-between">
-                      <span>${this.t('Subtotal')} (${this.cart.itemCount} ${this.t('items')}):</span>
-                      <span>${this.formatPrice(this.cart.subtotal)}</span>
+                      <span class="text-gray-600">${this.t('Subtotal')} (${this.cart.itemCount} ${this.t('items')}):</span>
+                      <span class="text-gray-900 font-semibold">${this.formatPrice(this.cart.subtotal)}</span>
                     </div>
                     <div class="flex justify-between">
-                      <span>${this.t('Tax')}:</span>
-                      <span>${this.formatPrice(this.cart.tax)}</span>
+                      <span class="text-gray-600">${this.t('Tax')}:</span>
+                      <span class="text-gray-900 font-semibold">${this.formatPrice(this.cart.tax)}</span>
                     </div>
                     <div class="flex justify-between">
-                      <span>${this.t('Shipping')}:</span>
-                      <span>${this.cart.shipping === 0 ? this.t('Free') : this.formatPrice(this.cart.shipping)}</span>
+                      <span class="text-gray-600">${this.t('Shipping')}:</span>
+                      <span class="text-gray-900 font-semibold">${this.cart.shipping === 0 ? this.t('Free') : this.formatPrice(this.cart.shipping)}</span>
                     </div>
                     <hr>
                     <div class="flex justify-between text-lg font-semibold">
@@ -1047,9 +1122,9 @@ class PCPartsShop {
                   </div>
 
                   <div class="mt-6 space-y-3">
-                    <button onclick="app.navigateTo('/checkout')" class="btn-primary w-full">
-                      <i class="fas fa-credit-card mr-2"></i>
-                      ${this.t('Proceed to Checkout')}
+                    <button onclick="app.navigateTo('/checkout')" class="btn-neon w-full py-4 text-lg font-retro font-bold uppercase tracking-wider">
+                      <i class="fas fa-rocket mr-3"></i>
+                      ${this.t('INITIALIZE CHECKOUT')}
                     </button>
                     <button onclick="app.navigateToHome()" class="btn-secondary w-full">
                       <i class="fas fa-arrow-left mr-2"></i>
@@ -1109,75 +1184,82 @@ class PCPartsShop {
           <!-- Checkout Form -->
           <div class="lg:col-span-2 space-y-8">
             <!-- Contact Information -->
-            <div class="bg-white rounded-lg shadow-sm p-6">
-              <h2 class="text-lg font-semibold mb-4">${this.t('Contact Information')}</h2>
-              <div class="space-y-4">
-                <div>
-                  <label class="form-label">${this.t('Email Address')}</label>
-                  <input type="email" id="checkoutEmail" value="${this.currentUser.email}" class="form-input" required>
-                </div>
+            <div class="bg-gray-50 rounded-lg shadow-sm p-6">
+              <h2 class="text-lg font-semibold text-gray-900 mb-6">${this.t('Contact Information')}</h2>
+              <div>
+                <label class="form-label">${this.t('Email Address')}</label>
+                <input type="email" id="checkoutEmail" value="${this.currentUser.email}" class="form-input w-full" required>
               </div>
             </div>
 
             <!-- Shipping Address -->
-            <div class="bg-white rounded-lg shadow-sm p-6">
-              <h2 class="text-lg font-semibold mb-4">${this.t('Shipping Address')}</h2>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="form-label">${this.t('First Name')}</label>
-                  <input type="text" id="shippingFirstName" value="${this.currentUser.first_name || ''}" class="form-input" required>
+            <div class="bg-gray-50 rounded-lg shadow-sm p-6">
+              <h2 class="text-lg font-semibold text-gray-900 mb-6">${this.t('Shipping Address')}</h2>
+              <div class="space-y-4">
+                <!-- Name Row -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="form-label">${this.t('First Name')}</label>
+                    <input type="text" id="shippingFirstName" value="${this.currentUser.first_name || ''}" class="form-input w-full" required>
+                  </div>
+                  <div>
+                    <label class="form-label">${this.t('Last Name')}</label>
+                    <input type="text" id="shippingLastName" value="${this.currentUser.last_name || ''}" class="form-input w-full" required>
+                  </div>
                 </div>
+                
+                <!-- Company -->
                 <div>
-                  <label class="form-label">${this.t('Last Name')}</label>
-                  <input type="text" id="shippingLastName" value="${this.currentUser.last_name || ''}" class="form-input" required>
-                </div>
-                <div class="md:col-span-2">
                   <label class="form-label">${this.t('Company')} (${this.t('Optional')})</label>
-                  <input type="text" id="shippingCompany" class="form-input">
+                  <input type="text" id="shippingCompany" class="form-input w-full">
                 </div>
-                <div class="md:col-span-2">
+                
+                <!-- Address -->
+                <div>
                   <label class="form-label">${this.t('Address')}</label>
-                  <input type="text" id="shippingAddress1" placeholder="${this.t('Street address')}" class="form-input" required>
-                </div>
-                <div class="md:col-span-2">
-                  <input type="text" id="shippingAddress2" placeholder="${this.t('Apartment, suite, etc.')}" class="form-input">
+                  <input type="text" id="shippingAddress1" placeholder="${this.t('Street address')}" class="form-input w-full" required>
                 </div>
                 <div>
-                  <label class="form-label">${this.t('City')}</label>
-                  <input type="text" id="shippingCity" class="form-input" required>
+                  <input type="text" id="shippingAddress2" placeholder="${this.t('Apartment, suite, etc.')}" class="form-input w-full">
                 </div>
-                <div>
-                  <label class="form-label">${this.t('Postal Code')}</label>
-                  <input type="text" id="shippingZip" class="form-input" required>
+                
+                <!-- City, Postal, Prefecture Row -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label class="form-label">${this.t('City')}</label>
+                    <input type="text" id="shippingCity" class="form-input w-full" required>
+                  </div>
+                  <div>
+                    <label class="form-label">${this.t('Postal Code')}</label>
+                    <input type="text" id="shippingZip" class="form-input w-full" required>
+                  </div>
+                  <div>
+                    <label class="form-label">${this.t('Prefecture')}</label>
+                    <select id="shippingProvince" class="form-input w-full" required>
+                      <option value="">${this.t('Select prefecture')}</option>
+                      ${this.renderPrefectureOptions()}
+                    </select>
+                  </div>
                 </div>
-                <div>
-                  <label class="form-label">${this.t('Prefecture')}</label>
-                  <select id="shippingProvince" class="form-input" required>
-                    <option value="">${this.t('Select prefecture')}</option>
-                    <option value="Tokyo">Tokyo</option>
-                    <option value="Osaka">Osaka</option>
-                    <option value="Kyoto">Kyoto</option>
-                    <option value="Kanagawa">Kanagawa</option>
-                    <option value="Chiba">Chiba</option>
-                    <option value="Saitama">Saitama</option>
-                    <option value="Other">${this.t('Other')}</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="form-label">${this.t('Country')}</label>
-                  <select id="shippingCountry" class="form-input" required>
-                    <option value="Japan">Japan</option>
-                  </select>
-                </div>
-                <div class="md:col-span-2">
-                  <label class="form-label">${this.t('Phone')} (${this.t('Optional')})</label>
-                  <input type="tel" id="shippingPhone" class="form-input">
+                
+                <!-- Country and Phone Row -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="form-label">${this.t('Country')}</label>
+                    <select id="shippingCountry" class="form-input w-full" required>
+                      <option value="Japan">Japan</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="form-label">${this.t('Phone')} (${this.t('Optional')})</label>
+                    <input type="tel" id="shippingPhone" class="form-input w-full">
+                  </div>
                 </div>
               </div>
             </div>
 
             <!-- Billing Address -->
-            <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="bg-gray-50 rounded-lg shadow-sm p-6">
               <div class="flex items-center justify-between mb-4">
                 <h2 class="text-lg font-semibold">${this.t('Billing Address')}</h2>
                 <label class="flex items-center">
@@ -1217,13 +1299,7 @@ class PCPartsShop {
                   <label class="form-label">${this.t('Prefecture')}</label>
                   <select id="billingProvince" class="form-input">
                     <option value="">${this.t('Select prefecture')}</option>
-                    <option value="Tokyo">Tokyo</option>
-                    <option value="Osaka">Osaka</option>
-                    <option value="Kyoto">Kyoto</option>
-                    <option value="Kanagawa">Kanagawa</option>
-                    <option value="Chiba">Chiba</option>
-                    <option value="Saitama">Saitama</option>
-                    <option value="Other">${this.t('Other')}</option>
+                    ${this.renderPrefectureOptions()}
                   </select>
                 </div>
                 <div>
@@ -1236,62 +1312,69 @@ class PCPartsShop {
             </div>
 
             <!-- Payment Method -->
-            <div class="bg-white rounded-lg shadow-sm p-6">
-              <h2 class="text-lg font-semibold mb-4">${this.t('Payment Method')}</h2>
-              <div class="space-y-4">
+            <div class="bg-gray-50 rounded-lg shadow-sm p-6">
+              <h2 class="text-lg font-semibold text-gray-900 mb-6">${this.t('Payment Method')}</h2>
+              <div class="space-y-6">
                 <!-- Credit Card Option -->
-                <label class="payment-option">
-                  <input type="radio" name="paymentMethod" value="credit_card" class="mr-3" checked>
-                  <div class="flex-1">
-                    <div class="flex items-center">
-                      <i class="fas fa-credit-card mr-2 text-primary-600"></i>
-                      <span class="font-medium">${this.t('Credit Card')}</span>
-                      <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded ml-2">${this.t('DEMO')}</span>
+                <div class="border border-gray-200 rounded-lg p-4">
+                  <label class="flex items-start cursor-pointer">
+                    <input type="radio" name="paymentMethod" value="credit_card" class="mt-1 mr-3" checked>
+                    <div class="flex-1">
+                      <div class="flex items-center">
+                        <i class="fas fa-credit-card mr-2 text-blue-600"></i>
+                        <span class="font-medium text-gray-900">${this.t('Credit Card')}</span>
+                        <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded ml-2">${this.t('DEMO')}</span>
+                      </div>
+                      <p class="text-sm text-gray-600 mt-1">${this.t('Secure payment with your credit card')}</p>
                     </div>
-                    <p class="text-sm text-gray-600 mt-1">${this.t('Secure payment with your credit card')}</p>
-                  </div>
-                </label>
+                  </label>
 
-                <!-- Credit Card Form -->
-                <div id="creditCardForm" class="ml-6 space-y-4">
-                  <div>
-                    <label class="form-label">${this.t('Card Number')}</label>
-                    <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" class="form-input" maxlength="19">
-                  </div>
-                  <div class="grid grid-cols-2 gap-4">
+                  <!-- Credit Card Form -->
+                  <div id="creditCardForm" class="mt-4 space-y-4">
                     <div>
-                      <label class="form-label">${this.t('Expiry Date')}</label>
-                      <input type="text" id="expiryDate" placeholder="MM/YY" class="form-input" maxlength="5">
+                      <label class="form-label">${this.t('Card Number')}</label>
+                      <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" class="form-input w-full" maxlength="19">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                      <div>
+                        <label class="form-label">${this.t('Expiry Date')}</label>
+                        <input type="text" id="expiryDate" placeholder="MM/YY" class="form-input w-full" maxlength="5">
+                      </div>
+                      <div>
+                        <label class="form-label">${this.t('CVV')}</label>
+                        <input type="text" id="cvv" placeholder="123" class="form-input w-full" maxlength="4">
+                      </div>
                     </div>
                     <div>
-                      <label class="form-label">${this.t('CVV')}</label>
-                      <input type="text" id="cvv" placeholder="123" class="form-input" maxlength="4">
+                      <label class="form-label">${this.t('Cardholder Name')}</label>
+                      <input type="text" id="cardholderName" value="${this.currentUser.first_name || ''} ${this.currentUser.last_name || ''}" class="form-input w-full">
                     </div>
-                  </div>
-                  <div>
-                    <label class="form-label">${this.t('Cardholder Name')}</label>
-                    <input type="text" id="cardholderName" value="${this.currentUser.first_name || ''} ${this.currentUser.last_name || ''}" class="form-input">
                   </div>
                 </div>
 
                 <!-- Cash on Delivery Option -->
-                <label class="payment-option">
-                  <input type="radio" name="paymentMethod" value="cod" class="mr-3">
-                  <div class="flex-1">
-                    <div class="flex items-center">
-                      <i class="fas fa-money-bill-wave mr-2 text-green-600"></i>
-                      <span class="font-medium">${this.t('Cash on Delivery')}</span>
+                <div class="border border-gray-200 rounded-lg p-4">
+                  <label class="flex items-start cursor-pointer">
+                    <input type="radio" name="paymentMethod" value="cod" class="mt-1 mr-3">
+                    <div class="flex-1">
+                      <div class="flex items-center">
+                        <i class="fas fa-money-bill-wave mr-2 text-green-600"></i>
+                        <span class="font-medium text-gray-900">${this.t('Cash on Delivery')}</span>
+                      </div>
+                      <p class="text-sm text-gray-600 mt-1">${this.t('Pay when you receive your order')}</p>
                     </div>
-                    <p class="text-sm text-gray-600 mt-1">${this.t('Pay when you receive your order')}</p>
-                  </div>
-                </label>
+                  </label>
+                </div>
               </div>
             </div>
 
             <!-- Order Notes -->
-            <div class="bg-white rounded-lg shadow-sm p-6">
-              <h2 class="text-lg font-semibold mb-4">${this.t('Order Notes')} (${this.t('Optional')})</h2>
-              <textarea id="orderNotes" rows="3" class="form-input" placeholder="${this.t('Special instructions for your order...')}"></textarea>
+            <div class="bg-gray-50 rounded-lg shadow-sm p-6">
+              <h2 class="text-lg font-semibold text-gray-900 mb-6">${this.t('Order Notes')} (${this.t('Optional')})</h2>
+              <div>
+                <label class="form-label">${this.t('Special instructions for your order...')}</label>
+                <textarea id="orderNotes" rows="4" class="form-input w-full resize-none" placeholder="${this.t('Special instructions for your order...')}"></textarea>
+              </div>
             </div>
           </div>
 
@@ -1325,9 +1408,9 @@ class PCPartsShop {
                   </div>
                 </div>
 
-                <button onclick="app.processOrder()" class="btn-primary w-full mt-6" id="placeOrderBtn">
-                  <i class="fas fa-lock mr-2"></i>
-                  ${this.t('Place Order')}
+                <button onclick="app.processOrder()" class="btn-neon w-full mt-6 py-4 text-lg font-retro font-bold uppercase tracking-wider" id="placeOrderBtn">
+                  <i class="fas fa-shield-alt mr-3"></i>
+                  ${this.t('EXECUTE ORDER')}
                 </button>
 
                 <div class="mt-4 text-center">
@@ -1794,7 +1877,20 @@ class PCPartsShop {
         '// Premium components for elite performance //': '// Premium components for elite performance //',
         'Components Available': 'Components Available',
         'System Reliability': 'System Reliability',
-        'Network Access': 'Network Access'
+        'Network Access': 'Network Access',
+        'ADD TO SYSTEM': 'ADD TO SYSTEM',
+        'WISHLIST': 'WISHLIST',
+        'INITIALIZE CHECKOUT': 'INITIALIZE CHECKOUT',
+        'EXECUTE ORDER': 'EXECUTE ORDER',
+        'Price Range': 'Price Range',
+        'Min': 'Min',
+        'Max': 'Max',
+        'Stock': 'Stock',
+        'Category': 'Category',
+        'Select prefecture': 'Select prefecture',
+        'create a new account': 'create a new account',
+        'Already have an account?': 'Already have an account?',
+        'Sign in here': 'Sign in here'
       },
       jp: {
         // Navigation
@@ -2029,7 +2125,20 @@ class PCPartsShop {
         '// Premium components for elite performance //': '// エリート性能のプレミアムコンポーネント //',
         'Components Available': 'コンポーネント数',
         'System Reliability': 'システム信頼性',
-        'Network Access': 'ネットワークアクセス'
+        'Network Access': 'ネットワークアクセス',
+        'ADD TO SYSTEM': 'システム追加',
+        'WISHLIST': 'ウィッシュリスト',
+        'INITIALIZE CHECKOUT': 'チェックアウト開始',
+        'EXECUTE ORDER': '注文実行',
+        'Price Range': '価格帯',
+        'Min': '最小',
+        'Max': '最大',
+        'Stock': '在庫',
+        'Category': 'カテゴリー',
+        'Select prefecture': '都道府県を選択',
+        'create a new account': '新しいアカウントを作成',
+        'Already have an account?': '既にアカウントをお持ちですか？',
+        'Sign in here': 'こちらからサインイン'
       }
     };
   }
@@ -2072,6 +2181,138 @@ class PCPartsShop {
 
   get language() {
     return this.config.lang || 'en';
+  }
+
+  // Render prefecture options based on current language
+  renderPrefectureOptions() {
+    const prefectures = this.config.lang === 'jp' ? {
+      'hokkaido': '北海道',
+      'aomori': '青森県',
+      'iwate': '岩手県',
+      'miyagi': '宮城県',
+      'akita': '秋田県',
+      'yamagata': '山形県',
+      'fukushima': '福島県',
+      'ibaraki': '茨城県',
+      'tochigi': '栃木県',
+      'gunma': '群馬県',
+      'saitama': '埼玉県',
+      'chiba': '千葉県',
+      'tokyo': '東京都',
+      'kanagawa': '神奈川県',
+      'niigata': '新潟県',
+      'toyama': '富山県',
+      'ishikawa': '石川県',
+      'fukui': '福井県',
+      'yamanashi': '山梨県',
+      'nagano': '長野県',
+      'gifu': '岐阜県',
+      'shizuoka': '静岡県',
+      'aichi': '愛知県',
+      'mie': '三重県',
+      'shiga': '滋賀県',
+      'kyoto': '京都府',
+      'osaka': '大阪府',
+      'hyogo': '兵庫県',
+      'nara': '奈良県',
+      'wakayama': '和歌山県',
+      'tottori': '鳥取県',
+      'shimane': '島根県',
+      'okayama': '岡山県',
+      'hiroshima': '広島県',
+      'yamaguchi': '山口県',
+      'tokushima': '徳島県',
+      'kagawa': '香川県',
+      'ehime': '愛媛県',
+      'kochi': '高知県',
+      'fukuoka': '福岡県',
+      'saga': '佐賀県',
+      'nagasaki': '長崎県',
+      'kumamoto': '熊本県',
+      'oita': '大分県',
+      'miyazaki': '宮崎県',
+      'kagoshima': '鹿児島県',
+      'okinawa': '沖縄県'
+    } : {
+      'hokkaido': 'Hokkaido',
+      'aomori': 'Aomori',
+      'iwate': 'Iwate',
+      'miyagi': 'Miyagi',
+      'akita': 'Akita',
+      'yamagata': 'Yamagata',
+      'fukushima': 'Fukushima',
+      'ibaraki': 'Ibaraki',
+      'tochigi': 'Tochigi',
+      'gunma': 'Gunma',
+      'saitama': 'Saitama',
+      'chiba': 'Chiba',
+      'tokyo': 'Tokyo',
+      'kanagawa': 'Kanagawa',
+      'niigata': 'Niigata',
+      'toyama': 'Toyama',
+      'ishikawa': 'Ishikawa',
+      'fukui': 'Fukui',
+      'yamanashi': 'Yamanashi',
+      'nagano': 'Nagano',
+      'gifu': 'Gifu',
+      'shizuoka': 'Shizuoka',
+      'aichi': 'Aichi',
+      'mie': 'Mie',
+      'shiga': 'Shiga',
+      'kyoto': 'Kyoto',
+      'osaka': 'Osaka',
+      'hyogo': 'Hyogo',
+      'nara': 'Nara',
+      'wakayama': 'Wakayama',
+      'tottori': 'Tottori',
+      'shimane': 'Shimane',
+      'okayama': 'Okayama',
+      'hiroshima': 'Hiroshima',
+      'yamaguchi': 'Yamaguchi',
+      'tokushima': 'Tokushima',
+      'kagawa': 'Kagawa',
+      'ehime': 'Ehime',
+      'kochi': 'Kochi',
+      'fukuoka': 'Fukuoka',
+      'saga': 'Saga',
+      'nagasaki': 'Nagasaki',
+      'kumamoto': 'Kumamoto',
+      'oita': 'Oita',
+      'miyazaki': 'Miyazaki',
+      'kagoshima': 'Kagoshima',
+      'okinawa': 'Okinawa'
+    };
+
+    return Object.entries(prefectures)
+      .map(([value, display]) => `<option value="${value}">${display}</option>`)
+      .join('');
+  }
+
+  // Render country options based on current language
+  renderCountryOptions() {
+    const countries = this.config.lang === 'jp' ? {
+      'Japan': '日本',
+      'United States': 'アメリカ合衆国',
+      'United Kingdom': 'イギリス',
+      'Germany': 'ドイツ',
+      'France': 'フランス',
+      'South Korea': '韓国',
+      'China': '中国',
+      'Other': 'その他'
+    } : {
+      'Japan': 'Japan',
+      'United States': 'United States',
+      'United Kingdom': 'United Kingdom', 
+      'Germany': 'Germany',
+      'France': 'France',
+      'South Korea': 'South Korea',
+      'China': 'China',
+      'Other': 'Other'
+    };
+
+    return Object.entries(countries)
+      .map(([value, display]) => `<option value="${value}" ${value === 'Japan' ? 'selected' : ''}>${display}</option>`)
+      .join('');
   }
 
   changeAdminLanguage(newLang) {
@@ -2174,21 +2415,81 @@ class PCPartsShop {
   }
 
   showNotification(message, type = 'info') {
+    // Create notification container if it doesn't exist
+    let notificationContainer = document.getElementById('notification-container');
+    if (!notificationContainer) {
+      notificationContainer = document.createElement('div');
+      notificationContainer.id = 'notification-container';
+      notificationContainer.className = 'fixed bottom-4 right-4 z-50 flex flex-col space-y-2 max-w-sm';
+      document.body.appendChild(notificationContainer);
+    }
+    
+    // Create flash notification for bottom right corner
     const notification = document.createElement('div');
-    notification.className = `notification notification-${type} fade-in`;
+    notification.className = `flash-notification flash-${type} transform translate-x-full transition-all duration-300 ease-out`;
+    
+    // Set colors and icons based on type
+    let bgClass = 'bg-blue-600';
+    let iconClass = 'fa-info-circle';
+    let borderClass = 'border-blue-500';
+    
+    switch(type) {
+      case 'success':
+        bgClass = 'bg-green-600';
+        iconClass = 'fa-check-circle';
+        borderClass = 'border-green-500';
+        break;
+      case 'error':
+        bgClass = 'bg-red-600';
+        iconClass = 'fa-exclamation-circle';
+        borderClass = 'border-red-500';
+        break;
+      case 'warning':
+        bgClass = 'bg-yellow-600';
+        iconClass = 'fa-exclamation-triangle';
+        borderClass = 'border-yellow-500';
+        break;
+    }
+    
     notification.innerHTML = `
-      <div class="flex items-center justify-between">
-        <span>${message}</span>
-        <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-current opacity-75 hover:opacity-100">
-          <i class="fas fa-times"></i>
-        </button>
+      <div class="${bgClass} text-white rounded-lg shadow-lg border-l-4 ${borderClass} min-w-0 max-w-full">
+        <div class="p-4 pr-12 relative">
+          <div class="flex items-start space-x-3">
+            <i class="fas ${iconClass} text-lg mt-0.5 flex-shrink-0"></i>
+            <div class="font-medium text-sm leading-relaxed break-words min-w-0 flex-1">
+              ${message}
+            </div>
+          </div>
+          <button onclick="this.closest('.flash-notification').style.transform='translateX(100%)'; setTimeout(() => this.closest('.flash-notification')?.remove(), 300);" 
+                  class="absolute top-2 right-2 text-white hover:text-gray-200 transition-colors duration-200 p-1">
+            <i class="fas fa-times text-sm"></i>
+          </button>
+        </div>
       </div>
     `;
     
-    document.body.appendChild(notification);
+    notificationContainer.appendChild(notification);
     
+    // Animate in from right
     setTimeout(() => {
-      notification.remove();
+      notification.classList.remove('translate-x-full');
+      notification.classList.add('translate-x-0');
+    }, 10);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.remove();
+          }
+          // Clean up container if empty
+          if (notificationContainer.children.length === 0) {
+            notificationContainer.remove();
+          }
+        }, 300);
+      }
     }, 5000);
   }
 
@@ -2243,13 +2544,13 @@ class PCPartsShop {
 
     if (showLoginForm) {
       showLoginForm.addEventListener('click', () => {
-        this.showLoginModal();
+        this.navigateTo('/login');
       });
     }
 
     if (showRegisterForm) {
       showRegisterForm.addEventListener('click', () => {
-        this.showRegisterModal();
+        this.navigateTo('/register');
       });
     }
 
@@ -2586,6 +2887,202 @@ class PCPartsShop {
     }
   }
 
+  // Login and Register Pages
+  showLoginPage() {
+    // Disable animated grid for auth pages
+    this.setAnimatedGrid(false);
+    
+    const app = document.getElementById('app');
+    app.innerHTML = `
+      <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md mx-auto">
+          <!-- Back to Home Link -->
+          <div class="text-center mb-8">
+            <button onclick="app.navigateToHome()" class="text-blue-600 hover:text-blue-800 inline-flex items-center">
+              <i class="fas fa-arrow-left mr-2"></i>
+              ${this.t('Back to Home')}
+            </button>
+          </div>
+
+          <!-- Login Form -->
+          <div class="bg-white rounded-lg shadow-md p-8">
+            <div class="text-center mb-8">
+              <h2 class="text-3xl font-bold text-gray-900 mb-2">${this.t('Sign in to your account')}</h2>
+              <p class="text-gray-600">
+                ${this.t('or')} 
+                <button onclick="app.navigateTo('/register')" class="text-blue-600 hover:text-blue-800 font-medium">
+                  ${this.t('create a new account')}
+                </button>
+              </p>
+            </div>
+
+            <!-- Demo Login Button -->
+            <button onclick="app.demoLogin()" class="w-full mb-6 bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors duration-200">
+              <i class="fas fa-user mr-2"></i>
+              ${this.t('Quick Demo Login')}
+            </button>
+
+            <!-- Login Form -->
+            <form id="loginPageForm" class="space-y-6" onsubmit="app.handlePageLogin(event)">
+              <div>
+                <label class="form-label">${this.t('Email')}</label>
+                <input type="email" id="pageLoginEmail" class="form-input w-full" required>
+              </div>
+              <div>
+                <label class="form-label">${this.t('Password')}</label>
+                <input type="password" id="pageLoginPassword" class="form-input w-full" required>
+              </div>
+              <button type="submit" class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                <i class="fas fa-sign-in-alt mr-2"></i>
+                ${this.t('Sign In')}
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    `;
+
+    this.scrollToTopAfterRender();
+  }
+
+  showRegisterPage() {
+    // Disable animated grid for auth pages
+    this.setAnimatedGrid(false);
+    
+    const app = document.getElementById('app');
+    app.innerHTML = `
+      <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md mx-auto">
+          <!-- Back to Home Link -->
+          <div class="text-center mb-8">
+            <button onclick="app.navigateToHome()" class="text-blue-600 hover:text-blue-800 inline-flex items-center">
+              <i class="fas fa-arrow-left mr-2"></i>
+              ${this.t('Back to Home')}
+            </button>
+          </div>
+
+          <!-- Register Form -->
+          <div class="bg-white rounded-lg shadow-md p-8">
+            <div class="text-center mb-8">
+              <h2 class="text-3xl font-bold text-gray-900 mb-2">${this.t('Create Account')}</h2>
+              <p class="text-gray-600">
+                ${this.t('Already have an account?')} 
+                <button onclick="app.navigateTo('/login')" class="text-blue-600 hover:text-blue-800 font-medium">
+                  ${this.t('Sign in here')}
+                </button>
+              </p>
+            </div>
+
+            <!-- Register Form -->
+            <form id="registerPageForm" class="space-y-6" onsubmit="app.handlePageRegister(event)">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="form-label">${this.t('First Name')}</label>
+                  <input type="text" id="pageRegisterFirstName" class="form-input w-full" required>
+                </div>
+                <div>
+                  <label class="form-label">${this.t('Last Name')}</label>
+                  <input type="text" id="pageRegisterLastName" class="form-input w-full" required>
+                </div>
+              </div>
+              <div>
+                <label class="form-label">${this.t('Email')}</label>
+                <input type="email" id="pageRegisterEmail" class="form-input w-full" required>
+              </div>
+              <div>
+                <label class="form-label">${this.t('Password')}</label>
+                <input type="password" id="pageRegisterPassword" class="form-input w-full" required>
+              </div>
+              <button type="submit" class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                <i class="fas fa-user-plus mr-2"></i>
+                ${this.t('Create Account')}
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    `;
+
+    this.scrollToTopAfterRender();
+  }
+
+  async handlePageLogin(event) {
+    event.preventDefault();
+    
+    const email = document.getElementById('pageLoginEmail')?.value;
+    const password = document.getElementById('pageLoginPassword')?.value;
+
+    if (!email || !password) {
+      this.showNotification(this.t('Please fill in all fields'), 'error');
+      return;
+    }
+
+    try {
+      const response = await axios.post('/auth/login', {
+        email,
+        password
+      });
+
+      if (response.data.success) {
+        this.currentUser = response.data.data.user;
+        localStorage.setItem('authToken', response.data.data.token);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.data.token}`;
+        
+        this.updateAuthUI();
+        this.showNotification(this.t('Login successful!'), 'success');
+        
+        // Redirect to home page
+        this.navigateToHome();
+      } else {
+        this.showNotification(response.data.error || this.t('Login failed'), 'error');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      this.showNotification(error.response?.data?.error || this.t('Login failed'), 'error');
+    }
+  }
+
+  async handlePageRegister(event) {
+    event.preventDefault();
+    
+    const firstName = document.getElementById('pageRegisterFirstName')?.value;
+    const lastName = document.getElementById('pageRegisterLastName')?.value;
+    const email = document.getElementById('pageRegisterEmail')?.value;
+    const password = document.getElementById('pageRegisterPassword')?.value;
+
+    if (!firstName || !lastName || !email || !password) {
+      this.showNotification(this.t('Please fill in all fields'), 'error');
+      return;
+    }
+
+    try {
+      const response = await axios.post('/auth/register', {
+        firstName,
+        lastName,
+        email,
+        password,
+        languagePreference: this.config.lang
+      });
+
+      if (response.data.success) {
+        this.currentUser = response.data.data.user;
+        localStorage.setItem('authToken', response.data.data.token);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.data.token}`;
+        
+        this.updateAuthUI();
+        this.showNotification(this.t('Account created successfully!'), 'success');
+        
+        // Redirect to home page
+        this.navigateToHome();
+      } else {
+        this.showNotification(response.data.error || this.t('Registration failed'), 'error');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      this.showNotification(error.response?.data?.error || this.t('Registration failed'), 'error');
+    }
+  }
+
   // Order processing
   async processOrder() {
     try {
@@ -2623,7 +3120,7 @@ class PCPartsShop {
       const placeOrderBtn = document.getElementById('placeOrderBtn');
       if (placeOrderBtn) {
         placeOrderBtn.disabled = false;
-        placeOrderBtn.innerHTML = `<i class="fas fa-lock mr-2"></i>${this.t('Place Order')}`;
+        placeOrderBtn.innerHTML = `<i class="fas fa-shield-alt mr-3"></i>${this.t('EXECUTE ORDER')}`;
       }
     }
   }
@@ -3223,7 +3720,7 @@ class PCPartsShop {
               </ol>
             </nav>
             
-            <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="bg-gray-50 rounded-lg shadow-sm p-6">
               <div class="flex items-center mb-4">
                 <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mr-4">
                   <i class="fas fa-microchip text-2xl text-blue-600"></i>
