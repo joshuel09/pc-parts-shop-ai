@@ -3880,6 +3880,14 @@ class PCPartsShop {
             <!-- Dashboard content will be loaded here -->
           </div>
         </div>
+        
+        <!-- Admin Footer -->
+        <footer class="bg-black border-t border-gray-200 py-4 mt-8">
+          <div class="flex items-center justify-center space-x-3">
+            <img src="https://page.gensparksite.com/v1/base64_upload/c30d7b9449b71571f65e1eb43a9b682f" alt="Logo" class="h-6 w-auto">
+            <p class="text-sm text-white">© 2026 Josusama</p>
+          </div>
+        </footer>
       </div>
 
       <style>

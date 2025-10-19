@@ -563,50 +563,10 @@ app.get('*', (c) => {
         </main>
         
         <!-- Footer -->
-        <footer class="bg-dark-900 border-t-2 border-neon-cyan py-16 mt-20 relative">
-            <div class="absolute inset-0 bg-gradient-to-b from-transparent to-dark-800 opacity-50"></div>
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                    <div>
-                        <h3 class="text-xl font-retro font-bold neon-text-cyan mb-6">RETRO TECH</h3>
-                        <p class="text-neon-green text-sm font-tech">${t('Your gateway to high-performance retro computing components.')}</p>
-                    </div>
-                    <div>
-                        <h4 class="text-md font-retro font-bold neon-text-pink mb-6">${t('CATEGORIES')}</h4>
-                        <ul class="space-y-3 text-neon-cyan font-tech text-sm">
-                            <li><a href="#" class="hover:neon-text-pink transition-all duration-300">${t('>> Processors')}</a></li>
-                            <li><a href="#" class="hover:neon-text-pink transition-all duration-300">${t('>> Graphics Cards')}</a></li>
-                            <li><a href="#" class="hover:neon-text-pink transition-all duration-300">${t('>> Motherboards')}</a></li>
-                            <li><a href="#" class="hover:neon-text-pink transition-all duration-300">${t('>> Memory')}</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 class="text-md font-retro font-bold neon-text-pink mb-6">${t('SUPPORT')}</h4>
-                        <ul class="space-y-3 text-neon-cyan font-tech text-sm">
-                            <li><a href="#" class="hover:neon-text-pink transition-all duration-300">${t('>> Help Center')}</a></li>
-                            <li><a href="#" class="hover:neon-text-pink transition-all duration-300">${t('>> Returns')}</a></li>
-                            <li><a href="#" class="hover:neon-text-pink transition-all duration-300">${t('>> Shipping')}</a></li>
-                            <li><a href="#" class="hover:neon-text-pink transition-all duration-300">${t('>> Contact Us')}</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 class="text-md font-retro font-bold neon-text-pink mb-6">${t('CONNECT')}</h4>
-                        <div class="flex space-x-6">
-                            <a href="#" class="neon-text-cyan hover:neon-text-pink transition-all duration-300 transform hover:scale-110">
-                                <i class="fab fa-facebook text-2xl"></i>
-                            </a>
-                            <a href="#" class="neon-text-cyan hover:neon-text-pink transition-all duration-300 transform hover:scale-110">
-                                <i class="fab fa-twitter text-2xl"></i>
-                            </a>
-                            <a href="#" class="neon-text-cyan hover:neon-text-pink transition-all duration-300 transform hover:scale-110">
-                                <i class="fab fa-instagram text-2xl"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <div class="border-t-2 border-neon-cyan mt-12 pt-8 text-center">
-                    <p class="font-retro text-sm neon-text-green">© 2024 RETRO TECH SYSTEMS. ${t('ALL RIGHTS RESERVED.')} // POWERED BY NEON TECHNOLOGY</p>
-                </div>
+        <footer class="bg-black border-t-2 border-neon-cyan py-4 mt-20">
+            <div class="flex items-center justify-center space-x-3">
+                <img src="https://page.gensparksite.com/v1/base64_upload/c30d7b9449b71571f65e1eb43a9b682f" alt="Logo" class="h-6 w-auto">
+                <p class="font-retro text-sm neon-text-green">© 2026 Josusama</p>
             </div>
         </footer>
         
